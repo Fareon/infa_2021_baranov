@@ -5,8 +5,8 @@ pygame.init()
 
 FPS = 30
 screen = pygame.display.set_mode((700, 700))
-screen.fill((255, 255, 255))
-
+white = (255, 255, 255)
+screen.fill(white)
 yellow = (255, 255, 51)
 black = (0, 0, 0)
 red = (255, 0, 0)
