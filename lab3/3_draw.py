@@ -6,6 +6,8 @@ YELLOW = (255, 255, 51)
 BLACK = (0, 0, 0)
 RED = (255, 0, 0)
 
+
+
 pygame.init()
 
 FPS = 30
