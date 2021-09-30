@@ -45,7 +45,8 @@ for j in umbrella_lines:
 pygame.draw.line(screen, BROWN, (399, 425), (650, 425), 60)
 pygame.draw.polygon(screen, BROWN, [(650, 455), (650, 396), (750, 396)])
 for f in range(0, 61, 3):
-    pygame.draw.arc(screen, BROWN, (340 + f, 336 + f, 120 - 2 * f, 120 - 2 * f), pi, 3 / 2 * pi, 3)
+    pygame.draw.circle(screen, BROWN, (399, 396), 60, 850,
+                       draw_bottom_left=True)
 pygame.draw.line(screen, BLACK, (450, 395), (450, 225), 10)
 pygame.draw.polygon(screen, LIGHT_BROWN, [(455, 225), (555, 310), (455, 395), (490, 310)])
 pygame.draw.polygon(screen, BLACK, [(455, 225), (555, 310), (455, 395), (490, 310)], 1)
