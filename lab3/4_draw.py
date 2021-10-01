@@ -36,8 +36,9 @@ def cloud(number: int, x_range = [], y_range = [], color = ()):
         pygame.draw.circle(screen, color, (cloud_x, cloud_y), 25)
         pygame.draw.circle(screen, BLACK, (cloud_x, cloud_y), 25, 1)
 
-
-pygame.draw.circle(screen, YELLOW, (700, 100), 60)
+def sun(x: int, y: int, R: int, outlinning: int, color = ()):
+    #outlining - fatness of outline (set 0 if you wont make outline)
+    pygame.draw.circle(screen, color, (x, y), R, outlinning)
 
 # umbrella
 pygame.draw.line(screen, ORANGE, (150, 700), (150, 430), 10)
@@ -63,6 +64,8 @@ pygame.draw.circle(screen, BLACK, (650, 425), 25, 5)
 def lets_drow ():
     background(300, 150, LIGHT_BLUE, YELLOW, BLUE)
     cloud(15, [130, 261], [70, 201], WHITE)
+    sun(700, 100, 60, 0, YELLOW)
+
 lets_drow()
 
 pygame.display.update()
