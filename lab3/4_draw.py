@@ -44,13 +44,15 @@ def sun(x: int, y: int, R: int, outlinning: int, color=()):
 
 
 # umbrella
-def umbrella(main_color = (), pole_color = ()):
-    pygame.draw.line(screen, pole_color, (150, 700), (150, 430), 10)
-    pygame.draw.polygon(screen, main_color, ((145, 430), (35, 500), (265, 500), (155, 430)))
-    umbrella_lines = [x for x in range(0, 90, 27)]
-    for j in umbrella_lines:
-        pygame.draw.line(screen, BLACK, (145, 430), (145 - j, 500), 1)
-        pygame.draw.line(screen, BLACK, (155, 430), (155 + j, 500), 1)
+def umbrella(x0, y0, a: int, main_color = (), pole_color = ()):
+    # x0, y0 - coords of left lower angle of rectangle, where umbrella inscribed
+    # a: int - scale (default umbrella is 47 X 30)
+    pygame.draw.line(screen, pole_color, (x0 + 10 * a, y0), (x0 + 10 * a, y0 - 13 * a), 2 * a)
+    pygame.draw.polygon(screen, main_color, ((x0, y0 - 13 * a), (x0 + 9 * a, y0 - 20 * a), (x0 + 11 * a, y0 - 20 * a), (x0 + 20 * a, y0 - 13 * a)))
+    umbrella_lines = [x for x in range(0, 10, 3)]
+    for line in umbrella_lines:
+        pygame.draw.line(screen, BLACK, (x0 + 9 * a, y0 - 20 * a), (x0 + line * a, y0 - 13 * a), 1)
+        pygame.draw.line(screen, BLACK, (x0 + 11 * a, y0 - 20 * a), (x0 + (11 + line) * a, y0 - 13 * a), 1)
 
 
 # ship
@@ -76,8 +78,13 @@ def lets_drow():
     background(300, 150, LIGHT_BLUE, YELLOW, BLUE)
     cloud(20, [130, 261], [70, 201], WHITE)
     sun(700, 100, 60, 0, YELLOW)
-    sheep(200, 200, 5, WHITE, BROWN, LIGHT_BROWN)
-    umbrella(RED, ORANGE)
+    sheep(370, 500, 6, WHITE, BROWN, LIGHT_BROWN)
+    sheep(690, 380, 1, WHITE, BROWN, LIGHT_BROWN)
+    sheep(330, 420, 2, WHITE, BROWN, LIGHT_BROWN)
+    sheep(80, 450, 3, WHITE, BROWN, LIGHT_BROWN)
+    umbrella(40, 720, 16, RED, ORANGE)
+    umbrella(700, 590, 6, RED, ORANGE)
+    umbrella(600, 570, 4, RED, ORANGE)
 
 lets_drow()
 
