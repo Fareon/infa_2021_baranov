@@ -54,20 +54,22 @@ def umbrella(main_color = (), pole_color = ()):
 
 
 # ship
-def sheep(x0, y0, a, window_color=(), maincolor1=(), maincolor2=()):
+def sheep(x0, y0, a: int, window_color=(), maincolor1=(), maincolor2=()):
+    # x0, y0 - coords of left lower angle of rectangle, where sheep inscribed
+    # a: int - scale (default sheep is 47 X 30)
     # draw main part of the sheep (line => nose => stern)
     pygame.draw.line(screen, maincolor1, (x0 + 10 * a, y0 - 5 * a), (x0 + 35 * a, y0 - 5 * a), 10 * a)
     pygame.draw.polygon(screen, maincolor1, [(x0 + 35 * a, y0), (x0 + 47 * a, y0 - 10 * a), (x0 + 35 * a , y0 - 10 * a)])
     pygame.draw.circle(screen, maincolor1, (x0 + 10 * a, y0 - 10 * a), 10 * a, draw_bottom_left=True)
     # mast
-#    pygame.draw.line(screen, BLACK, (450, 395), (450, 225), 10)
+    pygame.draw.line(screen, BLACK, (x0 + 17 * a, y0 - 10 * a), (x0 + 17 * a, y0 - 30 * a), 4)
     # sail
-#    pygame.draw.polygon(screen, maincolor2, [(455, 225), (555, 310), (455, 395), (490, 310)])
-#    pygame.draw.polygon(screen, BLACK, [(455, 225), (555, 310), (455, 395), (490, 310)], 1)
-#    pygame.draw.line(screen, BLACK, (490, 310), (555, 310), 1)
+    pygame.draw.polygon(screen, maincolor2, [(x0 + 35 * a, y0 - 21 * a), (x0 + 17 * a, y0 - 12 * a), (x0 + 22 * a, y0 - 21 * a), (x0 + 17 * a, y0 - 30 * a)])
+    pygame.draw.polygon(screen, BLACK, [(x0 + 35 * a, y0 - 21 * a), (x0 + 17 * a, y0 - 12 * a), (x0 + 22 * a, y0 - 21 * a), (x0 + 17 * a, y0 - 30 * a)], 1)
+    pygame.draw.line(screen, BLACK, (x0 + 35 * a, y0 - 21 * a), (x0 + 22 * a, y0 - 21 * a), 1)
     # window
-#    pygame.draw.circle(screen, window_color, (650, 425), 25)
-#    pygame.draw.circle(screen, BLACK, (650, 425), 25, 5)
+    pygame.draw.circle(screen, window_color, (x0 + 33 * a, y0 - 5 * a), 3 * a)
+    pygame.draw.circle(screen, BLACK, (x0 + 33 * a, y0 - 5 * a), 3 * a, 1)
 
 
 def lets_drow():
