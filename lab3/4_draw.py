@@ -19,14 +19,15 @@ FPS = 30
 screen = pygame.display.set_mode((800, 800))
 
 
-def background(sand_height: int, sea_height: int, sky_color = (), sand_color = (), sea_color = ()):  # background
+def background(sand_height: int, sea_height: int, sky_color=(), sand_color=(), sea_color=()):  # background
     screen.fill(sky_color)  # sky
     pygame.draw.line(screen, sand_color, (0, 650), (800, 650), sand_height)  # sand
-    pygame.draw.line(screen, sea_color, (0, sand_height + sea_height), (800, sand_height + sea_height), sea_height)  # sea
+    pygame.draw.line(screen, sea_color, (0, sand_height + sea_height), (800, sand_height + sea_height),
+                     sea_height)  # sea
 
 
 # clouds and sun
-def cloud(number: int, x_range = [], y_range = [], color = ()):
+def cloud(number: int, x_range=[], y_range=[], color=()):
     # number - amoung of ckouds
     # x_range, y_range - area where will be clouds drew
     # color - color of clouds
@@ -36,9 +37,11 @@ def cloud(number: int, x_range = [], y_range = [], color = ()):
         pygame.draw.circle(screen, color, (cloud_x, cloud_y), 25)
         pygame.draw.circle(screen, BLACK, (cloud_x, cloud_y), 25, 1)
 
-def sun(x: int, y: int, R: int, outlinning: int, color = ()):
-    #outlining - fatness of outline (set 0 if you wont make outline)
+
+def sun(x: int, y: int, R: int, outlinning: int, color=()):
+    # outlining - fatness of outline (set 0 if you wont make outline)
     pygame.draw.circle(screen, color, (x, y), R, outlinning)
+
 
 # umbrella
 pygame.draw.line(screen, ORANGE, (150, 700), (150, 430), 10)
@@ -48,23 +51,29 @@ for j in umbrella_lines:
     pygame.draw.line(screen, BLACK, (145, 430), (145 - j, 500), 1)
     pygame.draw.line(screen, BLACK, (155, 430), (155 + j, 500), 1)
 
-# ship
-pygame.draw.line(screen, BROWN, (399, 425), (650, 425), 60)
-pygame.draw.polygon(screen, BROWN, [(650, 455), (650, 396), (750, 396)])
-for f in range(0, 61, 3):
-    pygame.draw.circle(screen, BROWN, (399, 396), 60, 850,
-                       draw_bottom_left=True)
-pygame.draw.line(screen, BLACK, (450, 395), (450, 225), 10)
-pygame.draw.polygon(screen, LIGHT_BROWN, [(455, 225), (555, 310), (455, 395), (490, 310)])
-pygame.draw.polygon(screen, BLACK, [(455, 225), (555, 310), (455, 395), (490, 310)], 1)
-pygame.draw.line(screen, BLACK, (490, 310), (555, 310), 1)
-pygame.draw.circle(screen, WHITE, (650, 425), 25)
-pygame.draw.circle(screen, BLACK, (650, 425), 25, 5)
 
-def lets_drow ():
+# ship
+def sheep(window_color=(), maincolor1=(), maincolor2=()):
+    # draw main part of the sheep (line => nose => stern)
+    pygame.draw.line(screen, maincolor1, (399, 425), (650, 425), 60)
+    pygame.draw.polygon(screen, maincolor1, [(650, 455), (650, 396), (750, 396)])
+    pygame.draw.circle(screen, maincolor1, (399, 396), 60, 850, draw_bottom_left=True)
+    # mast
+    pygame.draw.line(screen, BLACK, (450, 395), (450, 225), 10)
+    # sail
+    pygame.draw.polygon(screen, maincolor2, [(455, 225), (555, 310), (455, 395), (490, 310)])
+    pygame.draw.polygon(screen, BLACK, [(455, 225), (555, 310), (455, 395), (490, 310)], 1)
+    pygame.draw.line(screen, BLACK, (490, 310), (555, 310), 1)
+    # window
+    pygame.draw.circle(screen, window_color, (650, 425), 25)
+    pygame.draw.circle(screen, BLACK, (650, 425), 25, 5)
+
+
+def lets_drow():
     background(300, 150, LIGHT_BLUE, YELLOW, BLUE)
-    cloud(15, [130, 261], [70, 201], WHITE)
+    cloud(20, [130, 261], [70, 201], WHITE)
     sun(700, 100, 60, 0, YELLOW)
+    sheep(WHITE, BROWN, LIGHT_BROWN)
 
 lets_drow()
 
