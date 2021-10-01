@@ -19,21 +19,23 @@ FPS = 30
 screen = pygame.display.set_mode((800, 800))
 
 
-def background(sand_height: int, sea_height: int):  # background
-    screen.fill(LIGHT_BLUE)  # sky
-    pygame.draw.line(screen, YELLOW, (0, 650), (800, 650), sand_height)  # sand
-    pygame.draw.line(screen, BLUE, (0, sand_height + sea_height), (800, sand_height + sea_height), sea_height)  # sea
+def background(sand_height: int, sea_height: int, sky_color = (), sand_color = (), sea_color = ()):  # background
+    screen.fill(sky_color)  # sky
+    pygame.draw.line(screen, sand_color, (0, 650), (800, 650), sand_height)  # sand
+    pygame.draw.line(screen, sea_color, (0, sand_height + sea_height), (800, sand_height + sea_height), sea_height)  # sea
 
 
 # clouds and sun
-def cloud(number: int, x_range = [], y_range = []):
+def cloud(number: int, x_range = [], y_range = [], color = ()):
     # number - amoung of ckouds
     # x_range, y_range - area where will be clouds drew
+    # color - color of clouds
     for i in range(number):
         cloud_x = randint(x_range[0], x_range[1])
         cloud_y = randint(y_range[0], y_range[1])
-        pygame.draw.circle(screen, WHITE, (cloud_x, cloud_y), 25)
+        pygame.draw.circle(screen, color, (cloud_x, cloud_y), 25)
         pygame.draw.circle(screen, BLACK, (cloud_x, cloud_y), 25, 1)
+
 
 pygame.draw.circle(screen, YELLOW, (700, 100), 60)
 
@@ -59,8 +61,8 @@ pygame.draw.circle(screen, WHITE, (650, 425), 25)
 pygame.draw.circle(screen, BLACK, (650, 425), 25, 5)
 
 def lets_drow ():
-    background(300, 150)
-    cloud(15, [130, 261], [70, 201])
+    background(300, 150, LIGHT_BLUE, YELLOW, BLUE)
+    cloud(15, [130, 261], [70, 201], WHITE)
 lets_drow()
 
 pygame.display.update()
