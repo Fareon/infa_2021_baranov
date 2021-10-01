@@ -44,12 +44,13 @@ def sun(x: int, y: int, R: int, outlinning: int, color=()):
 
 
 # umbrella
-pygame.draw.line(screen, ORANGE, (150, 700), (150, 430), 10)
-pygame.draw.polygon(screen, RED, ((145, 430), (35, 500), (265, 500), (155, 430)))
-umbrella_lines = [x for x in range(0, 90, 27)]
-for j in umbrella_lines:
-    pygame.draw.line(screen, BLACK, (145, 430), (145 - j, 500), 1)
-    pygame.draw.line(screen, BLACK, (155, 430), (155 + j, 500), 1)
+def umbrella(main_color = (), pole_color = ()):
+    pygame.draw.line(screen, pole_color, (150, 700), (150, 430), 10)
+    pygame.draw.polygon(screen, main_color, ((145, 430), (35, 500), (265, 500), (155, 430)))
+    umbrella_lines = [x for x in range(0, 90, 27)]
+    for j in umbrella_lines:
+        pygame.draw.line(screen, BLACK, (145, 430), (145 - j, 500), 1)
+        pygame.draw.line(screen, BLACK, (155, 430), (155 + j, 500), 1)
 
 
 # ship
@@ -74,6 +75,7 @@ def lets_drow():
     cloud(20, [130, 261], [70, 201], WHITE)
     sun(700, 100, 60, 0, YELLOW)
     sheep(WHITE, BROWN, LIGHT_BROWN)
+    umbrella(RED, ORANGE)
 
 lets_drow()
 
