@@ -54,27 +54,27 @@ def umbrella(main_color = (), pole_color = ()):
 
 
 # ship
-def sheep(window_color=(), maincolor1=(), maincolor2=()):
+def sheep(x0, y0, a, window_color=(), maincolor1=(), maincolor2=()):
     # draw main part of the sheep (line => nose => stern)
-    pygame.draw.line(screen, maincolor1, (399, 425), (650, 425), 60)
-    pygame.draw.polygon(screen, maincolor1, [(650, 455), (650, 396), (750, 396)])
-    pygame.draw.circle(screen, maincolor1, (399, 396), 60, 850, draw_bottom_left=True)
+    pygame.draw.line(screen, maincolor1, (x0 + 10 * a, y0 - 5 * a), (x0 + 35 * a, y0 - 5 * a), 10 * a)
+    pygame.draw.polygon(screen, maincolor1, [(x0 + 35 * a, y0), (x0 + 47 * a, y0 - 10 * a), (x0 + 35 * a , y0 - 10 * a)])
+    pygame.draw.circle(screen, maincolor1, (x0 + 10 * a, y0 - 10 * a), 10 * a, draw_bottom_left=True)
     # mast
-    pygame.draw.line(screen, BLACK, (450, 395), (450, 225), 10)
+#    pygame.draw.line(screen, BLACK, (450, 395), (450, 225), 10)
     # sail
-    pygame.draw.polygon(screen, maincolor2, [(455, 225), (555, 310), (455, 395), (490, 310)])
-    pygame.draw.polygon(screen, BLACK, [(455, 225), (555, 310), (455, 395), (490, 310)], 1)
-    pygame.draw.line(screen, BLACK, (490, 310), (555, 310), 1)
+#    pygame.draw.polygon(screen, maincolor2, [(455, 225), (555, 310), (455, 395), (490, 310)])
+#    pygame.draw.polygon(screen, BLACK, [(455, 225), (555, 310), (455, 395), (490, 310)], 1)
+#    pygame.draw.line(screen, BLACK, (490, 310), (555, 310), 1)
     # window
-    pygame.draw.circle(screen, window_color, (650, 425), 25)
-    pygame.draw.circle(screen, BLACK, (650, 425), 25, 5)
+#    pygame.draw.circle(screen, window_color, (650, 425), 25)
+#    pygame.draw.circle(screen, BLACK, (650, 425), 25, 5)
 
 
 def lets_drow():
     background(300, 150, LIGHT_BLUE, YELLOW, BLUE)
     cloud(20, [130, 261], [70, 201], WHITE)
     sun(700, 100, 60, 0, YELLOW)
-    sheep(WHITE, BROWN, LIGHT_BROWN)
+    sheep(200, 200, 5, WHITE, BROWN, LIGHT_BROWN)
     umbrella(RED, ORANGE)
 
 lets_drow()
