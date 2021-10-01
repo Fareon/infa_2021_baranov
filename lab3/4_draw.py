@@ -26,11 +26,15 @@ def background(sand_height: int, sea_height: int):  # background
 
 
 # clouds and sun
-for i in range(15):
-    cloud_x = randint(130, 261)
-    cloud_y = randint(70, 201)
-    pygame.draw.circle(screen, WHITE, (cloud_x, cloud_y), 25)
-    pygame.draw.circle(screen, BLACK, (cloud_x, cloud_y), 25, 1)
+def cloud(number: int, x_range = [], y_range = []):
+    # number - amoung of ckouds
+    # x_range, y_range - area where will be clouds drew
+    for i in range(number):
+        cloud_x = randint(x_range[0], x_range[1])
+        cloud_y = randint(y_range[0], y_range[1])
+        pygame.draw.circle(screen, WHITE, (cloud_x, cloud_y), 25)
+        pygame.draw.circle(screen, BLACK, (cloud_x, cloud_y), 25, 1)
+
 pygame.draw.circle(screen, YELLOW, (700, 100), 60)
 
 # umbrella
@@ -56,6 +60,7 @@ pygame.draw.circle(screen, BLACK, (650, 425), 25, 5)
 
 def lets_drow ():
     background(300, 150)
+    cloud(15, [130, 261], [70, 201])
 lets_drow()
 
 pygame.display.update()
