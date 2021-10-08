@@ -7,6 +7,7 @@ FPS = 30
 SCREEN_WIDTH, SCREEN_HEIGHT = SPACE = (1500, 800)
 screen = pygame.display.set_mode(SPACE)
 
+GREY = (200, 200, 200)
 RED = (255, 0, 0)
 BLUE = (0, 0, 255)
 YELLOW = (255, 255, 0)
@@ -35,21 +36,25 @@ def draw_balls():
     :return:
     """
     for ball in balls:
-        circle(screen, ball[0], (ball[1], ball[2]), ball[3])
+        circle(screen, ball[0], (ball[1], ball[2]), ball[3])  # Unpacking the tuple
 
 
 def erase_definer(position):
     """
-    Checks whether mouse clicked on a ball or not
+    Checks whether mouse clicked on a ball or not. If yes, erases the ball and adds a score point
     :param position: Position of the mouse when clicked on the surface
-    :return:
+    :return: How many scores should be added
     """
+    inner_counter = 0
     mouse_x = position[0]
     mouse_y = position[1]
     for ball in balls:
-        if (mouse_x - ball[1]) ** 2 + (mouse_y - ball[2]) ** 2 <= ball[3] ** 2:
+        if (mouse_x - ball[1]) ** 2 + (mouse_y - ball[2]) ** 2 <= ball[3] ** 2:  # Pifagor theorem
             erase_ball(ball)
             balls.append(gen_ball())
+            inner_counter += 1
+    return inner_counter
+
 
 
 def erase_ball(ball):
@@ -60,7 +65,9 @@ def erase_ball(ball):
     balls.remove(ball)
 
 
-balls = [gen_ball()]
+balls = [gen_ball() for i in range(10)]
+scores = 0
+scores_counter_position = (30, 30)
 
 clock = pygame.time.Clock()
 finished = False
@@ -72,9 +79,13 @@ while not finished:
             finished = True
         elif event.type == pygame.MOUSEBUTTONDOWN:
             mouse_position = pygame.mouse.get_pos()
-            erase_definer(mouse_position)
+            scores += erase_definer(mouse_position)
 
+    # View
     screen.fill(BLACK)
+    text = pygame.font.Font(None, 36)
+    scores_counter = text.render(str(scores), True, GREY)
+    screen.blit(scores_counter, scores_counter_position)
     draw_balls()
     pygame.display.update()
 
