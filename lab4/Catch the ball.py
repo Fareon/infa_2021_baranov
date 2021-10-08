@@ -6,6 +6,7 @@ pygame.init()
 FPS = 5
 screen = pygame.display.set_mode((1500, 800))
 scores = 0
+balls = []
 
 RED = (255, 0, 0)
 BLUE = (0, 0, 255)
@@ -22,11 +23,9 @@ def new_ball():
     Рисует новый шарик
     :return: None
     """
-    x = randint(100,1100)
-    y = randint(100,800)
-    r = randint(30,50)
+    x, y, r = (randint(100,1100), randint(100,800), randint(30,100))
     color = COLORS[randint(0, 5)]
-    circle(screen, color, (x, y), r)
+    balls.append(circle(screen, color, (x, y), r))
 
 
 def click_the_ball():
@@ -37,7 +36,6 @@ def click_the_ball():
     """
 
 
-pygame.display.update()
 clock = pygame.time.Clock()
 finished = False
 
@@ -47,11 +45,11 @@ while not finished:
         if event.type == pygame.QUIT:
             finished = True
         elif event.type == pygame.MOUSEBUTTONDOWN:
-            print('Click!')
-
-
-
+            scores += 1
+        elif event.type == pygame.MOUSEBUTTONUP:
+            new_ball()
     pygame.display.update()
-    screen.fill(BLACK)
 
+print("Congratulations! Your score:", scores)
+scores = 0
 pygame.quit()
