@@ -3,7 +3,7 @@ from pygame.draw import *
 from random import randint
 pygame.init()
 
-FPS = 1
+FPS = 30
 SCREEN_WIDTH, SCREEN_HEIGHT = SPACE = (1500, 800)
 screen = pygame.display.set_mode(SPACE)
 
@@ -29,7 +29,7 @@ def gen_ball():
     return ball_color, ball_x, ball_y, ball_radius
 
 
-def draw_ball():
+def draw_balls():
     """
     Draws a ball on the screen
     :return:
@@ -38,14 +38,29 @@ def draw_ball():
         circle(screen, ball[0], (ball[1], ball[2]), ball[3])
 
 
-def erase_ball():
+def erase_definer(position):
+    """
+    Checks whether mouse clicked on a ball or not
+    :param position: Position of the mouse when clicked on the surface
+    :return:
+    """
+    mouse_x = position[0]
+    mouse_y = position[1]
+    for ball in balls:
+        if (mouse_x - ball[1]) ** 2 + (mouse_y - ball[2]) ** 2 <= ball[3] ** 2:
+            erase_ball(ball)
+            balls.append(gen_ball())
+
+
+def erase_ball(ball):
     """
     Erases the ball from the screen
     :return:
     """
+    balls.remove(ball)
 
 
-balls = []
+balls = [gen_ball()]
 
 clock = pygame.time.Clock()
 finished = False
@@ -55,8 +70,12 @@ while not finished:
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
             finished = True
-    balls.append(gen_ball())
-    draw_ball()
+        elif event.type == pygame.MOUSEBUTTONDOWN:
+            mouse_position = pygame.mouse.get_pos()
+            erase_definer(mouse_position)
+
+    screen.fill(BLACK)
+    draw_balls()
     pygame.display.update()
 
 
