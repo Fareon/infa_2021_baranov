@@ -27,7 +27,7 @@ def gen_ball():
     ball_x = randint(ball_radius, SCREEN_WIDTH - ball_radius)
     ball_y = randint(ball_radius, SCREEN_HEIGHT - ball_radius)
     ball_color = COLORS[randint(0, len(COLORS) - 1)]
-    return ball_color, ball_x, ball_y, ball_radius
+    return [ball_color, ball_x, ball_y, ball_radius]
 
 
 def draw_balls():
@@ -52,9 +52,9 @@ def erase_definer(position):
         if (mouse_x - ball[1]) ** 2 + (mouse_y - ball[2]) ** 2 <= ball[3] ** 2:  # Pifagor theorem
             erase_ball(ball)
             balls.append(gen_ball())
+            generate_velocity(-1)
             inner_counter += 1
     return inner_counter
-
 
 
 def erase_ball(ball):
@@ -65,7 +65,38 @@ def erase_ball(ball):
     balls.remove(ball)
 
 
+def generate_velocity(ball_index):
+    """
+    generates parameters for velocity of a ball
+    :param ball_index: index of a ball in a list of balls
+    :return:
+    """
+    horizontal_velocity, vertical_velocity = randint(-20, 20), randint(-20, 20)
+    balls[ball_index].append(horizontal_velocity)
+    balls[ball_index].append(vertical_velocity)
+
+
+def generate_velocity_all_balls():
+    """
+
+    :return:
+    """
+    for ball in balls:
+        generate_velocity(balls.index(ball))
+
+
+def move_balls():
+    """
+    Moves every ball according their position and velocity
+    :return:
+    """
+    for ball in balls:
+        ball[1] += ball[4]  # adding velocity to ball_x
+        ball[2] += ball[5]  # adding velocity to ball_y
+
+
 balls = [gen_ball() for i in range(10)]
+generate_velocity_all_balls()
 scores = 0
 scores_counter_position = (30, 30)
 
@@ -86,6 +117,7 @@ while not finished:
     text = pygame.font.Font(None, 36)
     scores_counter = text.render(str(scores), True, GREY)
     screen.blit(scores_counter, scores_counter_position)
+    move_balls()  # Model string
     draw_balls()
     pygame.display.update()
 
