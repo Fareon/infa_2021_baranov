@@ -1,6 +1,7 @@
 import pygame
 from pygame.draw import *
 from random import randint
+import numpy as np
 pygame.init()
 
 FPS = 30
@@ -41,7 +42,9 @@ def draw_balls():
 
 def erase_definer(position):
     """
-    Checks whether mouse clicked on a ball or not. If yes, erases the ball and adds a score point
+    Checks whether mouse clicked on an object or not.
+    If yes, erases the object and adds some scores.
+    Otherwise, takes away 10 points from player's scores.
     :param position: Position of the mouse when clicked on the surface
     :return: How many scores should be added
     """
@@ -50,19 +53,21 @@ def erase_definer(position):
     mouse_y = position[1]
     for ball in balls:
         if (mouse_x - ball[1]) ** 2 + (mouse_y - ball[2]) ** 2 <= ball[3] ** 2:  # Pifagor theorem
-            erase_ball(ball)
-            balls.append(gen_ball())
-            generate_velocity(-1)
-            inner_counter += 1
+            pop_ball(ball)
+            inner_counter += int(np.sqrt(ball[4] ** 2 + ball[5] ** 2) * (80 - ball[3])) + 1
+    if inner_counter == 0:
+        inner_counter -= 10
     return inner_counter
 
 
-def erase_ball(ball):
+def pop_ball(ball):
     """
-    Erases the ball from the screen
+    Erases the ball from the screen and creates a new one
     :return:
     """
     balls.remove(ball)
+    balls.append(gen_ball())
+    generate_velocity(-1)
 
 
 def generate_velocity(ball_index):
@@ -78,7 +83,7 @@ def generate_velocity(ball_index):
 
 def generate_velocity_all_balls():
     """
-
+    sets velocity for each ball
     :return:
     """
     for ball in balls:
@@ -105,8 +110,10 @@ def move_balls(times_moved=1):
             ball[2] += ball[5]  # adding velocity to ball_y
 
 
-balls = [gen_ball() for i in range(10)]
+number_of_balls = 5
+balls = [gen_ball() for i in range(number_of_balls)]
 generate_velocity_all_balls()
+time_speed = 10
 scores = 0
 scores_counter_position = (30, 30)
 
@@ -115,6 +122,7 @@ finished = False
 
 while not finished:
     clock.tick(FPS)
+
     # Control
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
@@ -124,7 +132,7 @@ while not finished:
             scores += erase_definer(mouse_position)
 
     # Model
-    move_balls(10)
+    move_balls(time_speed)
 
     # View
     screen.fill(BLACK)
