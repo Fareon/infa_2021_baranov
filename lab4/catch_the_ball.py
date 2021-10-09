@@ -23,7 +23,7 @@ def gen_ball():
     Generates parameters of a ball
     :return: parameters for drawing a ball
     """
-    ball_radius = randint(10, 100)
+    ball_radius = randint(30, 80)
     ball_x = randint(ball_radius, SCREEN_WIDTH - ball_radius)
     ball_y = randint(ball_radius, SCREEN_HEIGHT - ball_radius)
     ball_color = COLORS[randint(0, len(COLORS) - 1)]
@@ -71,7 +71,7 @@ def generate_velocity(ball_index):
     :param ball_index: index of a ball in a list of balls
     :return:
     """
-    horizontal_velocity, vertical_velocity = randint(-20, 20), randint(-20, 20)
+    horizontal_velocity, vertical_velocity = randint(-100, 100) / 100, randint(-100, 100) / 100
     balls[ball_index].append(horizontal_velocity)
     balls[ball_index].append(vertical_velocity)
 
@@ -85,14 +85,24 @@ def generate_velocity_all_balls():
         generate_velocity(balls.index(ball))
 
 
-def move_balls():
+def move_balls(times_moved=1):
     """
     Moves every ball according their position and velocity
+    :param times_moved: indicates the speed of time
     :return:
     """
-    for ball in balls:
-        ball[1] += ball[4]  # adding velocity to ball_x
-        ball[2] += ball[5]  # adding velocity to ball_y
+    for time in range(times_moved):
+        for ball in balls:
+            # checking the position and changing horizontal velocity if needed
+            if ball[1] <= ball[3] + 1 or ball[1] >= SCREEN_WIDTH - (ball[3] + 1):
+                ball[4] *= -1
+
+            # checking the position and changing vertical velocity if needed
+            elif ball[2] <= ball[3] + 1 or ball[2] >= SCREEN_HEIGHT - (ball[3] + 1):
+                ball[5] *= -1
+
+            ball[1] += ball[4]  # adding velocity to ball_x
+            ball[2] += ball[5]  # adding velocity to ball_y
 
 
 balls = [gen_ball() for i in range(10)]
@@ -105,6 +115,7 @@ finished = False
 
 while not finished:
     clock.tick(FPS)
+    # Control
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
             finished = True
@@ -112,12 +123,14 @@ while not finished:
             mouse_position = pygame.mouse.get_pos()
             scores += erase_definer(mouse_position)
 
+    # Model
+    move_balls(10)
+
     # View
     screen.fill(BLACK)
     text = pygame.font.Font(None, 36)
     scores_counter = text.render(str(scores), True, GREY)
     screen.blit(scores_counter, scores_counter_position)
-    move_balls()  # Model string
     draw_balls()
     pygame.display.update()
 
