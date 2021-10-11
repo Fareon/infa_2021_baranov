@@ -192,12 +192,15 @@ generate_velocity_all_balls()
 time_speed = 10
 scores = 0
 scores_counter_position = (30, 30)
+play_time = 60000
 
 clock = pygame.time.Clock()
 finished = False
 
 while not finished:
     clock.tick(FPS)
+    if pygame.time.get_ticks() >= play_time:
+        finished = True
 
     # Control
     for event in pygame.event.get():
