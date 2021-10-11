@@ -5,9 +5,9 @@ import numpy as np
 
 pygame.init()
 
-FPS = 30
-SCREEN_WIDTH, SCREEN_HEIGHT = SPACE = (1500, 800)
-screen = pygame.display.set_mode(SPACE)
+FPS = 60
+screen_width, screen_height = space = (1500, 800)
+screen = pygame.display.set_mode(space)
 
 GREY = (200, 200, 200)
 RED = (255, 0, 0)
@@ -18,43 +18,6 @@ MAGENTA = (255, 0, 255)
 CYAN = (0, 255, 255)
 BLACK = (0, 0, 0)
 COLORS = [RED, BLUE, YELLOW, GREEN, MAGENTA, CYAN]
-
-
-def define_ball(possibility):
-    """
-    Defines which type of ball is to be generated
-    :param possibility: possibility of generating a super ball in percents
-    :return:
-    """
-    lotery = randint(1, int(100 / possibility))
-    if lotery % int(100 / possibility) == 0:
-        create_super_ball()
-    else:
-        create_ball()
-
-
-def gen_ball():
-    """
-    Generates parameters of a ball
-    :return: parameters for drawing a ball
-    """
-    ball_radius = randint(30, 80)
-    ball_x = randint(ball_radius, SCREEN_WIDTH - ball_radius)
-    ball_y = randint(ball_radius, SCREEN_HEIGHT - ball_radius)
-    ball_color = COLORS[randint(0, len(COLORS) - 1)]
-    return [ball_color, ball_x, ball_y, ball_radius]
-
-
-def gen_super_ball():
-    """
-    Generates parameters of a super ball
-    :return: parameters for drawing a super ball
-    """
-    super_ball_radius = 80
-    super_ball_x = randint(super_ball_radius, SCREEN_WIDTH - super_ball_radius)
-    super_ball_y = randint(super_ball_radius, SCREEN_HEIGHT - super_ball_radius)
-    super_ball_color = (RED, BLUE, YELLOW, GREEN)
-    return [super_ball_color, super_ball_x, super_ball_y, super_ball_radius]
 
 
 def draw_balls():
@@ -69,6 +32,84 @@ def draw_balls():
         circle(screen, super_ball[0][1], (super_ball[1], super_ball[2]), super_ball[3] - 20)
         circle(screen, super_ball[0][2], (super_ball[1], super_ball[2]), super_ball[3] - 40)
         circle(screen, super_ball[0][3], (super_ball[1], super_ball[2]), super_ball[3] - 60)
+
+
+def gen_ball():
+    """
+    Generates parameters of a ball
+    :return: parameters for drawing a ball
+    """
+    ball_radius = randint(30, 80)
+    ball_x = randint(ball_radius, screen_width - ball_radius)
+    ball_y = randint(ball_radius, screen_height - ball_radius)
+    ball_color = COLORS[randint(0, len(COLORS) - 1)]
+    return [ball_color, ball_x, ball_y, ball_radius]
+
+
+def gen_super_ball():
+    """
+    Generates parameters of a super ball
+    :return: parameters for drawing a super ball
+    """
+    super_ball_radius = 80
+    super_ball_x = randint(super_ball_radius, screen_width - super_ball_radius)
+    super_ball_y = randint(super_ball_radius, screen_height - super_ball_radius)
+    super_ball_color = (RED, BLUE, YELLOW, GREEN)
+    return [super_ball_color, super_ball_x, super_ball_y, super_ball_radius]
+
+
+def generate_velocity(object_type, index=-1):
+    """
+    generates parameters for velocity of a ball
+    :param object_type: defines which object will get a velocity
+    :param index: index of a ball in a list of balls
+    :return:
+    """
+    horizontal_velocity, vertical_velocity = randint(-100, 100) / 100, randint(-100, 100) / 100
+    object_type[index].append(horizontal_velocity)
+    object_type[index].append(vertical_velocity)
+
+
+def generate_velocity_all_balls():
+    """
+    sets velocity for each ball
+    :return:
+    """
+    for ball in balls:
+        generate_velocity(balls, balls.index(ball))
+    for super_ball in super_balls:
+        generate_velocity(super_balls, super_balls.index(super_ball))
+
+
+def define_ball(possibility):
+    """
+    Defines which type of ball is to be generated
+    :param possibility: possibility of generating a super ball in percents
+    :return:
+    """
+    lottery = randint(1, int(100 / possibility))
+    if lottery % int(100 / possibility) == 0:
+        create_super_ball()
+    else:
+        create_ball()
+
+
+def create_ball():
+    """
+    Creates a new ball
+    :return:
+    """
+    balls.append(gen_ball())
+    generate_velocity(balls)
+
+
+def create_super_ball():
+    """
+    Creates a new super ball
+    :return:
+    """
+    super_balls.append(gen_super_ball())
+    generate_velocity(super_balls)
 
 
 def erase_definer(position):
@@ -97,47 +138,6 @@ def erase_definer(position):
     return inner_counter
 
 
-def create_ball():
-    """
-    Creates a new ball
-    :return:
-    """
-    balls.append(gen_ball())
-    generate_velocity(balls)
-
-
-def create_super_ball():
-    """
-    Creates a new super ball
-    :return:
-    """
-    super_balls.append(gen_super_ball())
-    generate_velocity(super_balls)
-
-
-def generate_velocity(object_type, index=-1):
-    """
-    generates parameters for velocity of a ball
-    :param object_type: defines which object will get a velocity
-    :param index: index of a ball in a list of balls
-    :return:
-    """
-    horizontal_velocity, vertical_velocity = randint(-100, 100) / 100, randint(-100, 100) / 100
-    object_type[index].append(horizontal_velocity)
-    object_type[index].append(vertical_velocity)
-
-
-def generate_velocity_all_balls():
-    """
-    sets velocity for each ball
-    :return:
-    """
-    for ball in balls:
-        generate_velocity(balls, balls.index(ball))
-    for super_ball in super_balls:
-        generate_velocity(super_balls, super_balls.index(super_ball))
-
-
 def move_balls(times_moved):
     """
     Moves every ball according their position and velocity
@@ -147,11 +147,11 @@ def move_balls(times_moved):
     for time in range(times_moved):
         for ball in balls:
             # checking the position and changing horizontal velocity if needed
-            if ball[1] <= ball[3] + 1 or ball[1] >= SCREEN_WIDTH - (ball[3] + 1):
+            if ball[1] <= ball[3] + 1 or ball[1] >= screen_width - (ball[3] + 1):
                 ball[4] *= -1
 
             # checking the position and changing vertical velocity if needed
-            elif ball[2] <= ball[3] + 1 or ball[2] >= SCREEN_HEIGHT - (ball[3] + 1):
+            elif ball[2] <= ball[3] + 1 or ball[2] >= screen_height - (ball[3] + 1):
                 ball[5] *= -1
 
             ball[1] += ball[4]  # adding velocity to ball_x
@@ -173,18 +173,18 @@ def move_super_balls(times_moved):
     for time in range(times_moved):
         for ball in super_balls:
             # checking the position and changing horizontal velocity if needed
-            if ball[1] <= ball[3] + 1 or ball[1] >= SCREEN_WIDTH - (ball[3] + 1):
+            if ball[1] <= ball[3] + 1 or ball[1] >= screen_width - (ball[3] + 1):
                 ball[4] *= -1
 
             # checking the position and changing vertical velocity if needed
-            elif ball[2] <= ball[3] + 1 or ball[2] >= SCREEN_HEIGHT - (ball[3] + 1):
+            elif ball[2] <= ball[3] + 1 or ball[2] >= screen_height - (ball[3] + 1):
                 ball[5] *= -1
 
             ball[1] += ball[4]  # adding velocity to ball_x
             ball[2] += ball[5]  # adding velocity to ball_y
 
 
-number_of_balls = 5
+number_of_balls = 4
 balls = [gen_ball() for i in range(number_of_balls)]
 super_balls = []
 super_ball_possibility = 20
