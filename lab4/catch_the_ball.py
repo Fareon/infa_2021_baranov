@@ -3,6 +3,8 @@ from pygame.draw import *
 from random import randint
 import numpy as np
 
+player_name = input("Enter your name or nickname: ")
+
 pygame.init()
 
 FPS = 60
@@ -157,6 +159,13 @@ def move_balls(times_moved):
             ball[1] += ball[4]  # adding velocity to ball_x
             ball[2] += ball[5]  # adding velocity to ball_y
 
+            # Debuging ball's disappearance
+            bug_x = ball[1] > screen_width + ball[3] or ball[1] < -(ball[3])
+            bug_y = ball[2] > screen_height + ball[3] or ball[2] < -(ball[3])
+            if bug_x or bug_y:
+                balls.remove(ball)
+                create_ball()
+
 
 def move_super_balls(times_moved):
     """
@@ -189,7 +198,7 @@ balls = [gen_ball() for i in range(number_of_balls)]
 super_balls = []
 super_ball_possibility = 20
 generate_velocity_all_balls()
-time_speed = 10
+targets_speed = 8
 scores = 0
 scores_counter_position = (30, 30)
 play_time = 60000
@@ -211,8 +220,8 @@ while not finished:
             scores += erase_definer(mouse_position)
 
     # Model
-    move_balls(time_speed)
-    move_super_balls(time_speed * 2)
+    move_balls(targets_speed)
+    move_super_balls(targets_speed * 2)
 
     # View
     screen.fill(BLACK)
@@ -225,3 +234,5 @@ while not finished:
 
 
 pygame.quit()
+
+print("Congratulations,", player_name + "!", "You've scored", scores)
