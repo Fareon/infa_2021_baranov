@@ -160,13 +160,6 @@ def move_balls(times_moved):
             ball[1] += ball[4]  # adding velocity to ball_x
             ball[2] += ball[5]  # adding velocity to ball_y
 
-            # Debuging ball's disappearance
-            bug_x = ball[1] > screen_width + ball[3] or ball[1] < -(ball[3])
-            bug_y = ball[2] > screen_height + ball[3] or ball[2] < -(ball[3])
-            if bug_x or bug_y:
-                balls.remove(ball)
-                create_ball()
-
 
 def move_super_balls(times_moved):
     """
