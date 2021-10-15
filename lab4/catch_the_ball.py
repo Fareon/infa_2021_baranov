@@ -148,13 +148,14 @@ def move_balls(times_moved):
     """
     for time in range(times_moved):
         for ball in balls:
-            # checking the position and changing horizontal velocity if needed
-            if ball[1] <= ball[3] + 1 or ball[1] >= screen_width - (ball[3] + 1):
-                ball[4] *= -1
-
-            # checking the position and changing vertical velocity if needed
-            elif ball[2] <= ball[3] + 1 or ball[2] >= screen_height - (ball[3] + 1):
-                ball[5] *= -1
+            touched_border_1 = ball[1] <= ball[3] + 1 or ball[1] >= screen_width - (ball[3] + 1)
+            touched_border_2 = ball[2] <= ball[3] + 1 or ball[2] >= screen_height - (ball[3] + 1)
+            # checking the position and changing velocity if needed
+            if touched_border_1 or touched_border_2:
+                if touched_border_1:
+                    ball[4] *= -1
+                elif touched_border_2:
+                    ball[5] *= -1
 
             ball[1] += ball[4]  # adding velocity to ball_x
             ball[2] += ball[5]  # adding velocity to ball_y
@@ -207,11 +208,11 @@ clock = pygame.time.Clock()
 finished = False
 
 while not finished:
+    # Control
     clock.tick(FPS)
     if pygame.time.get_ticks() >= play_time:
         finished = True
 
-    # Control
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
             finished = True
