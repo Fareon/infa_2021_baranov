@@ -193,6 +193,7 @@ super_ball_possibility = 20
 generate_velocity_all_balls()
 targets_speed = 8
 scores = 0
+
 scores_counter_position = (30, 30)
 play_time = 60000
 
