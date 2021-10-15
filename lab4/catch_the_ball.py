@@ -1,7 +1,6 @@
 import pygame
 from pygame.draw import *
 from random import randint
-import numpy as np
 
 player_name = input("Enter your name or nickname: ")
 
