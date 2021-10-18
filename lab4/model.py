@@ -7,15 +7,9 @@ def init():
     """
     global screen_width, screen_height, space
     global number_of_balls, balls, super_balls, super_ball_possibility, targets_speed
-    global GREEN, GREY, RED, BLUE, YELLOW, MAGENTA, CYAN, BLACK, COLORS
+    global GREY, RED, YELLOW, BLUE, GREEN, MAGENTA, CYAN, BLACK, COLORS
 
     screen_width, screen_height = space = (1500, 800)
-
-    number_of_balls = 4
-    balls = [gen_ball() for i in range(number_of_balls)]
-    super_balls = []
-    super_ball_possibility = 20
-    targets_speed = 8
 
     GREY = (200, 200, 200)
     RED = (255, 0, 0)
@@ -26,6 +20,13 @@ def init():
     CYAN = (0, 255, 255)
     BLACK = (0, 0, 0)
     COLORS = [RED, BLUE, YELLOW, GREEN, MAGENTA, CYAN]
+
+    number_of_balls = 4
+    balls = [gen_ball() for i in range(number_of_balls)]
+    super_balls = []
+    super_ball_possibility = 20
+    targets_speed = 8
+    generate_velocity_all_balls()
 
 
 def gen_ball():
@@ -134,3 +135,51 @@ def create_ball():
     """
     balls.append(gen_ball())
     generate_velocity(balls)
+
+
+def create_super_ball():
+    """
+    Creates a new super ball
+    :return:
+    """
+    super_balls.append(gen_super_ball())
+    generate_velocity(super_balls)
+
+
+def handler(position):
+    """
+    Checks whether mouse clicked on an object or not.
+    If yes, erases the object and adds some scores.
+    Otherwise, takes away 10 points from player's scores.
+    :param position: Position of the mouse when clicked on the surface
+    :return: How many scores should be added
+    """
+    inner_counter = 0
+    mouse_x = position[0]
+    mouse_y = position[1]
+    for ball in balls:
+        if (mouse_x - ball[1]) ** 2 + (mouse_y - ball[2]) ** 2 <= ball[3] ** 2:  # Pifagor theorem
+            balls.remove(ball)
+            inner_counter += (80 - ball[3]) + 1
+            define_ball(super_ball_possibility)
+    for super_ball in super_balls:
+        if (mouse_x - super_ball[1]) ** 2 + (mouse_y - super_ball[2]) ** 2 <= super_ball[3] ** 2:  # Pifagor theorem
+            super_balls.remove(super_ball)
+            inner_counter += 200
+            define_ball(super_ball_possibility)
+    if inner_counter == 0:
+        inner_counter -= 20
+    return inner_counter
+
+
+def define_ball(possibility):
+    """
+    Defines which type of ball is to be generated
+    :param possibility: possibility of generating a super ball in percents
+    :return:
+    """
+    lottery = randint(1, int(100 / possibility))
+    if lottery % int(100 / possibility) == 0:
+        create_super_ball()
+    else:
+        create_ball()
