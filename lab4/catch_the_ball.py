@@ -1,6 +1,7 @@
 import pygame
 from pygame.draw import *
 from random import randint
+import lab4.model as model
 
 player_name = input("Enter your name or nickname: ")
 
