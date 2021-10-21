@@ -1,31 +1,29 @@
 from random import randint
 
+GREY = (200, 200, 200)
+RED = (255, 0, 0)
+BLUE = (0, 0, 255)
+YELLOW = (255, 255, 0)
+GREEN = (0, 255, 0)
+MAGENTA = (255, 0, 255)
+CYAN = (0, 255, 255)
+BLACK = (0, 0, 0)
+COLORS = [RED, BLUE, YELLOW, GREEN, MAGENTA, CYAN]
+
+screen_width, screen_height = space = (1500, 800)
+number_of_balls = 4
+super_ball_possibility = 20  # in percent
+targets_speed = 2
+
 
 def init():
     """
-    initializes model's computation
+    Creates objects of the game, gives attributes to them
     """
-    global screen_width, screen_height, space
-    global number_of_balls, balls, super_balls, super_ball_possibility, targets_speed
-    global GREY, RED, YELLOW, BLUE, GREEN, MAGENTA, CYAN, BLACK, COLORS
+    global balls, super_balls
 
-    screen_width, screen_height = space = (1500, 800)
-
-    GREY = (200, 200, 200)
-    RED = (255, 0, 0)
-    BLUE = (0, 0, 255)
-    YELLOW = (255, 255, 0)
-    GREEN = (0, 255, 0)
-    MAGENTA = (255, 0, 255)
-    CYAN = (0, 255, 255)
-    BLACK = (0, 0, 0)
-    COLORS = [RED, BLUE, YELLOW, GREEN, MAGENTA, CYAN]
-
-    number_of_balls = 4
-    balls = [gen_ball() for i in range(number_of_balls)]
+    balls = [gen_ball() for _ in range(number_of_balls)]
     super_balls = []
-    super_ball_possibility = 20
-    targets_speed = 8
     generate_velocity_all_balls()
 
 
@@ -49,7 +47,7 @@ def gen_super_ball():
     super_ball_radius = 80
     super_ball_x = randint(super_ball_radius, screen_width - super_ball_radius)
     super_ball_y = randint(super_ball_radius, screen_height - super_ball_radius)
-    super_ball_color = (RED, BLUE, YELLOW, GREEN)
+    super_ball_color = (RED, YELLOW, GREEN)
     return [super_ball_color, super_ball_x, super_ball_y, super_ball_radius]
 
 
@@ -77,6 +75,9 @@ def generate_velocity(object_type, index=-1):
 
 
 def tick():
+    """
+    Moves objects one moment forward
+    """
     move_balls(targets_speed)
     move_super_balls(targets_speed * 2)
 
@@ -110,7 +111,7 @@ def move_super_balls(times_moved):
     """
     for super_ball in super_balls:
         if super_ball[3] != 0:
-            super_ball[3] -= 1
+            super_ball[3] -= 0.25
         else:
             super_balls.remove(super_ball)
             create_ball()

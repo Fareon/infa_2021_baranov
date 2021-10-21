@@ -4,10 +4,11 @@ import lab4.model as model
 
 player_name = input("Enter your name or nickname: ")
 
-FPS = 60
+FPS = 240
 
 pygame.init()
 model.init()
+
 scores = 0
 scores_counter_position = (30, 30)
 play_time = 60000
@@ -23,10 +24,11 @@ def draw_balls():
     for ball in model.balls:
         circle(screen, ball[0], (ball[1], ball[2]), ball[3])  # Unpacking the list
     for super_ball in model.super_balls:
-        circle(screen, super_ball[0][0], (super_ball[1], super_ball[2]), super_ball[3])  # Unpacking the list
+
+        # Indexes here are standing for attributes of a particular ball
+        circle(screen, super_ball[0][0], (super_ball[1], super_ball[2]), super_ball[3])
         circle(screen, super_ball[0][1], (super_ball[1], super_ball[2]), super_ball[3] - 20)
         circle(screen, super_ball[0][2], (super_ball[1], super_ball[2]), super_ball[3] - 40)
-        circle(screen, super_ball[0][3], (super_ball[1], super_ball[2]), super_ball[3] - 60)
 
 
 clock = pygame.time.Clock()
