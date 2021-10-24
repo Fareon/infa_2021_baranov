@@ -1,5 +1,4 @@
-import math
-from random import choice, randint
+from random import randint
 import numpy as np
 import pygame
 
@@ -188,11 +187,12 @@ class Target:
 
     def __init__(self):
         self.r = randint(2, 50)
-        self.position = (randint(self.r, WIDTH - self.r), randint(self.r, HEIGHT - 50 - self.r))
+        self.position = [randint(self.r, WIDTH - self.r), randint(self.r, HEIGHT - 50 - self.r)]
         self.color = RED
         self.points = 0
         self.live = 1
         self.screen = screen
+        self.velocity = [randint(-10, 10), randint(-10, 10)]
 
     def hit(self, points=1):
         """
@@ -200,6 +200,20 @@ class Target:
         :param points: added points
         """
         self.points += points
+
+    def move(self):
+        self.check_and_reflect()
+        for _ in range(2):
+            self.position[_] -= self.velocity[_]
+
+    def check_and_reflect(self):
+        """
+        Checks if the target touches the walls and reflect if needed
+        """
+        for _ in range(2):
+            touched_wall = self.position[_] <= (self.r + 1) or self.position[_] >= (SPACE[_] - self.r - 1)
+            if touched_wall:
+                self.velocity[_] = np.sign(self.velocity[_]) * randint(-10, - np.abs(self.velocity[_]))
 
     def draw(self):
         pygame.draw.circle(self.screen, self.color, self.position, self.r)
@@ -243,5 +257,7 @@ while not finished:
             target = Target()
         b.tick_and_kill()
     gun.power_up()
+
+    target.move()
 
 pygame.quit()
