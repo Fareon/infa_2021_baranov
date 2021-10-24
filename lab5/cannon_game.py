@@ -1,10 +1,9 @@
 import math
 from random import choice, randint
-
+import numpy as np
 import pygame
 
-
-FPS = 30
+FPS = 60
 
 RED = 0xFF0000
 BLUE = 0x0000FF
@@ -13,11 +12,11 @@ GREEN = 0x00FF00
 MAGENTA = 0xFF03B8
 CYAN = 0x00FFCC
 BLACK = (0, 0, 0)
-WHITE = 0xFFFFFF
+WHITE = (250, 250, 250)
 GREY = 0x7D7D7D
 GAME_COLORS = [RED, BLUE, YELLOW, GREEN, MAGENTA, CYAN]
 
-WIDTH, HEIGHT = SPACE = 800,600
+WIDTH, HEIGHT = SPACE = 800, 600
 
 
 def random_color():
@@ -28,12 +27,13 @@ def random_color():
 
 
 class Ball:
-    def __init__(self, position, velocity, color=None, r=15):
+    def __init__(self, position, vx, vy, color=None, r=15):
         """
         Initializes ball's initial parameters
 
         :param position: ball's initial velocity
-        :param velocity: ball's initial velocity
+        :param vx: ball's initial velocity (x axis)
+        :param vy: ball's initial velocity (y axis)
         :param r: ball's radius
         :param color: ball's color
         """
@@ -42,9 +42,10 @@ class Ball:
         self.screen = screen
         self.position = position
         self.r = r
-        self.velocity = velocity
+        self.vx = vx
+        self.vy = vy
         self.color = color
-        self.live = 30
+        self.live = 150
 
     def draw(self):
         """
@@ -57,7 +58,7 @@ class Ball:
             self.r
         )
 
-    def move(self, reflection_cut=0.2, times_moved=1):
+    def move(self, reflection_cut=0.4, times_moved=1):
         """
         Moves the ball according to its velocity and position
 
@@ -65,70 +66,100 @@ class Ball:
         :param times_moved: stands for visible velocity of the ball
         """
         for _ in range(times_moved):
-            self.check_and_reflect(reflection_cut)
-            self.velocity[1] -= gravity
-            self.position[0] += self.velocity[0]
-            self.position[1] += self.velocity[1]
+            self.vy -= gravity
+            if self.check_and_reflect(reflection_cut):
+                self.position[0] += self.vx / (1 - 1.1 * reflection_cut)
+                self.position[1] -= self.vy / (1 - 1.1 * reflection_cut)
+            else:
+                self.position[0] += self.vx
+                self.position[1] -= self.vy
 
     def check_and_reflect(self, reflection_cut):
         """
         Checks if the ball touches the walls and reflect if needed
+
         :param reflection_cut: part of velocity value cut by single reflection
+        :return: Whether touched any of the walls (bool)
         """
-        for _ in range(2):
-            if self.position[_] <= (self.r + 1) or self.position[_] >= (SPACE[_] - self.r - 1):
-                self.velocity[_] = -(self.velocity[_] * (1 - reflection_cut))
+        touched_wall = self.position[0] <= (self.r + 1) or self.position[0] >= (SPACE[0] - self.r - 1)
+        touched_floor = self.position[1] <= (self.r + 1) or self.position[1] >= (SPACE[1] - self.r - 1)
+        if touched_wall or touched_floor:
+            if touched_wall:
+                self.vx = -(self.vx * (1 - reflection_cut))
+            if self.position[1] <= (self.r + 1) or self.position[1] >= (SPACE[1] - self.r - 1):
+                self.vy = -(self.vy * (1 - reflection_cut))
+            return True
+        else:
+            return False
 
     def hit_test(self, obj):
-        """Функция проверяет сталкивалкивается ли данный обьект с целью, описываемой в обьекте obj.
+        """
+        The function checks whether the ball hits the aim or not
 
-        Args:
-            obj: Обьект, с которым проверяется столкновение.
-        Returns:
-            Возвращает True в случае столкновения мяча и цели. В противном случае возвращает False.
+        :param obj: object, for which the test takes place
+        :return: Whether has hit or not (bool)
         """
         # Pifagor theorem
-        hit = (self.x - obj.x) ** 2 + (self.y - obj.y) ** 2 <= self.r ** 2 + obj.r ** 2
+        hit = (self.position[0] - obj.position[0]) ** 2 + \
+              (self.position[1] - obj.position[1]) ** 2 <= (self.r + obj.r) ** 2
         if hit:
             return True
         else:
             return False
 
+    def tick_and_kill(self):
+        """
+        Makes the ball "older" and kills if too "old"
+        """
+        global balls
+        if self.live > 0:
+            self.live -= 1
+        else:
+            balls.remove(self)
+
 
 class Gun:
-    def __init__(self, screen):
+    """
+    Creates a gun. Controls its power, position and movement
+    """
+
+    def __init__(self):
         self.screen = screen
-        self.f2_power = 10
-        self.f2_on = 0
-        self.angle = 1
+        self.power = 10
+        self.is_active = False
+        self.angle = 0
         self.color = GREY
+        self.position = (WIDTH / 2, HEIGHT * 0.9)
 
-    def fire2_start(self):
-        self.f2_on = 1
+    def fire_start(self):
+        self.is_active = True
 
-    def fire2_end(self, position):
-        """Выстрел мячом.
-
-        Происходит при отпускании кнопки мыши.
-        Начальные значения компонент скорости мяча vx и vy зависят от положения мыши.
+    def fire_end(self):
+        """
+        Fires with a ball
         """
         global balls, bullet
         bullet += 1
-        new_ball = Ball()
+        ball_vx, ball_vy = self.power * np.cos(self.angle) / FPS * 30, self.power * np.sin(self.angle) / FPS * 30
+        new_ball = Ball(list(self.position), ball_vx, ball_vy)
         new_ball.r += 5
-        self.angle = math.atan2((position[1] - new_ball.y), (position[0] - new_ball.x))
-        new_ball.vx = self.f2_power * math.cos(self.angle)
-        new_ball.vy = - self.f2_power * math.sin(self.angle)
         balls.append(new_ball)
-        self.f2_on = 0
-        self.f2_power = 10
+        self.is_active = 0
+        self.power = 10
 
     def targeting(self, position):
-        """Прицеливание. Зависит от положения мыши."""
+        """
+        Sets gun's head according to mouse position
+        :param position: mouse position
+        """
         if event:
-            if event.pos[0] - 20 != 0:
-                self.angle = math.atan(-(position[1] - 450) / (position[0] - 20))
-        if self.f2_on:
+            if event.pos[0] - self.position[0] != 0:
+                tg = -(position[1] - self.position[1]) / (position[0] - self.position[0])
+                if tg >= 0:
+                    self.angle = np.arctan(tg)
+                else:
+                    self.angle = np.pi + np.arctan(tg)
+        if self.is_active:
             self.color = RED
         else:
             self.color = GREY
@@ -136,38 +167,42 @@ class Gun:
     def draw(self):
         pygame.draw.line(self.screen,
                          self.color,
-                         (20, 450),
-                         (20 + math.cos(self.angle) * self.f2_power, 450 - math.sin(self.angle) * self.f2_power),
+                         self.position,
+                         (self.position[0] + np.cos(self.angle) * self.power,
+                          self.position[1] - np.sin(self.angle) * self.power),
                          2)
 
     def power_up(self):
-        if self.f2_on:
-            if self.f2_power < 100:
-                self.f2_power += 1
+        if self.is_active:
+            if self.power < 100:
+                self.power += 1
             self.color = RED
         else:
             self.color = GREY
 
 
 class Target:
-    # FIXME: don't work!!! How to call this functions when object is created?
+    """
+    Initializes a target, controls its parameters
+    """
 
     def __init__(self):
-        """ Инициализация новой цели. """
-        self.x = randint(600, 780)
-        self.y = randint(300, 550)
         self.r = randint(2, 50)
+        self.position = (randint(self.r, WIDTH - self.r), randint(self.r, HEIGHT - 50 - self.r))
         self.color = RED
         self.points = 0
         self.live = 1
         self.screen = screen
 
     def hit(self, points=1):
-        """Попадание шарика в цель."""
+        """
+        Ball hits the target
+        :param points: added points
+        """
         self.points += points
 
     def draw(self):
-        pygame.draw.circle(self.screen, self.color, (self.x, self.y), self.r)
+        pygame.draw.circle(self.screen, self.color, self.position, self.r)
 
 
 pygame.init()
@@ -177,7 +212,7 @@ balls = []
 gravity = 1
 
 clock = pygame.time.Clock()
-gun = Gun(screen)
+gun = Gun()
 target = Target()
 finished = False
 
@@ -194,9 +229,9 @@ while not finished:
         if event.type == pygame.QUIT:
             finished = True
         elif event.type == pygame.MOUSEBUTTONDOWN:
-            gun.fire2_start()  # deleted event here
+            gun.fire_start()  # deleted event here
         elif event.type == pygame.MOUSEBUTTONUP:
-            gun.fire2_end(pygame.mouse.get_pos())
+            gun.fire_end()
         elif event.type == pygame.MOUSEMOTION:
             gun.targeting(pygame.mouse.get_pos())
 
@@ -206,6 +241,7 @@ while not finished:
             target.live = 0
             target.hit()
             target = Target()
+        b.tick_and_kill()
     gun.power_up()
 
 pygame.quit()
