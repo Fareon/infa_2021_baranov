@@ -152,7 +152,7 @@ class Gun:
         :param position: mouse position
         """
         if event:
-            if event.pos[0] - self.position[0] != 0:
+            if position[0] - self.position[0] != 0:
                 tg = -(position[1] - self.position[1]) / (position[0] - self.position[0])
                 if tg >= 0:
                     self.angle = np.arctan(tg)
@@ -186,13 +186,13 @@ class Target:
     """
 
     def __init__(self):
-        self.r = randint(2, 50)
-        self.position = [randint(self.r, WIDTH - self.r), randint(self.r, HEIGHT - 50 - self.r)]
+        self.r = randint(5, 40)
+        self.position = [randint(self.r, WIDTH - self.r), randint(self.r, HEIGHT * 0.75 - self.r)]
         self.color = RED
         self.points = 0
-        self.live = 1
+        self.is_alive = True
         self.screen = screen
-        self.velocity = [randint(-10, 10), randint(-10, 10)]
+        self.velocity = [int(randint(-10, 10) / FPS * 30), int(randint(-10, 10) / FPS * 30)]
 
     def hit(self, points=1):
         """
@@ -210,10 +210,12 @@ class Target:
         """
         Checks if the target touches the walls and reflect if needed
         """
-        for _ in range(2):
-            touched_wall = self.position[_] <= (self.r + 1) or self.position[_] >= (SPACE[_] - self.r - 1)
-            if touched_wall:
-                self.velocity[_] = np.sign(self.velocity[_]) * randint(-10, - np.abs(self.velocity[_]))
+        touched_wall = self.position[0] <= (self.r + 1) or self.position[0] >= (SPACE[0] - self.r - 1)
+        touched_floor = self.position[1] <= (self.r + 1) or self.position[1] >= (SPACE[1] * 0.75)
+        if touched_wall:
+            self.velocity[0] = np.sign(self.velocity[0]) * randint(-10, - np.abs(self.velocity[0]))
+        if touched_floor:
+            self.velocity[1] = np.sign(self.velocity[1]) * randint(-10, - np.abs(self.velocity[1]))
 
     def draw(self):
         pygame.draw.circle(self.screen, self.color, self.position, self.r)
@@ -223,19 +225,23 @@ pygame.init()
 screen = pygame.display.set_mode(SPACE)
 bullet = 0
 balls = []
+number_of_targets = 2
+targets = []
 gravity = 1
+for _ in range(number_of_targets):
+    targets.append(Target())
 
 clock = pygame.time.Clock()
 gun = Gun()
-target = Target()
 finished = False
 
 while not finished:
     screen.fill(WHITE)
     gun.draw()
-    target.draw()
-    for b in balls:
-        b.draw()
+    for target in targets:
+        target.draw()
+    for ball in balls:
+        ball.draw()
     pygame.display.update()
 
     clock.tick(FPS)
@@ -249,15 +255,18 @@ while not finished:
         elif event.type == pygame.MOUSEMOTION:
             gun.targeting(pygame.mouse.get_pos())
 
-    for b in balls:
-        b.move()
-        if b.hit_test(target) and target.live:
-            target.live = 0
-            target.hit()
-            target = Target()
-        b.tick_and_kill()
     gun.power_up()
-
-    target.move()
+    for ball in balls:
+        ball.move()
+        ball.tick_and_kill()
+    for target in targets:
+        for ball in balls:
+            if ball.hit_test(target) and target.is_alive:
+                target.is_alive = False
+                target.hit()
+                targets.remove(target)
+                targets.append(Target())
+                ball.live -= 150
+        target.move()
 
 pygame.quit()
