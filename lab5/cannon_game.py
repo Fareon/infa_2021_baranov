@@ -2,20 +2,74 @@ from random import randint
 import numpy as np
 import pygame
 
-FPS = 60
 
-RED = 0xFF0000
-BLUE = 0x0000FF
-YELLOW = 0xFFC91F
-GREEN = 0x00FF00
-MAGENTA = 0xFF03B8
-CYAN = 0x00FFCC
-BLACK = (0, 0, 0)
-WHITE = (250, 250, 250)
-GREY = 0x7D7D7D
-GAME_COLORS = [RED, BLUE, YELLOW, GREEN, MAGENTA, CYAN]
+class GameManager:
+    """"""
+    def __init__(self, screen, number_of_targets):
+        """
+        Initialises the cannon game
+        """
+        self.screen = screen
+        self.bullet = 0
+        self.shots = []
+        self.number_of_targets = 2
+        self.targets = []
+        self.clock = pygame.time.Clock()
+        self.gun = Gun()
+        self.finished = False
+        for _ in range(number_of_targets):
+            self.targets.append(Enemy())
 
-WIDTH, HEIGHT = SPACE = 800, 600
+    def mainloop(self):
+        """
+
+        """
+        pygame.init()
+        while not self.finished:
+            self.clock.tick(FPS)
+            for event in pygame.event.get():
+                if event.type == pygame.QUIT:
+                    self.finished = True
+                elif event.type == pygame.MOUSEBUTTONDOWN:
+                    self.gun.fire_start()  # deleted event here
+                elif event.type == pygame.MOUSEBUTTONUP:
+                    self.fire()
+                    self.gun.fire_end()
+                elif event.type == pygame.MOUSEMOTION:
+                    self.gun.targeting(pygame.mouse.get_pos())
+            self.gun.power_up()
+
+            for shot in self.shots:
+                shot.move()
+                shot.tick()
+                if shot.live <= 0:
+                    self.shots.remove(shot)
+            for target in self.targets:
+                for shot in self.shots:
+                    if shot.hit_test(target) and target.is_alive:
+                        target.is_alive = False
+                        target.hit()
+                        self.targets.remove(target)
+                        self.targets.append(Enemy())
+                        shot.live -= 100
+                target.move()
+            self.screen.fill(WHITE)
+            for target in self.targets:
+                target.draw()
+            for shot in self.shots:
+                shot.draw()
+            self.gun.draw()
+            pygame.display.update()
+
+        pygame.quit()
+
+    def fire(self):
+        self.bullet += 1
+        shot_vx = self.gun.power * np.cos(self.gun.angle) / FPS * 20
+        shot_vy = self.gun.power * np.sin(self.gun.angle) / FPS * 20
+        new_shot = Shot(list(self.gun.position), shot_vx, shot_vy)
+        new_shot.r += 5
+        self.shots.append(new_shot)
 
 
 def random_color():
@@ -25,7 +79,7 @@ def random_color():
     return randint(0, 254), randint(0, 254), randint(0, 254)
 
 
-class Ball:
+class Shot:
     def __init__(self, position, vx, vy, color=None, r=15):
         """
         Initializes ball's initial parameters
@@ -38,13 +92,14 @@ class Ball:
         """
         if color is None:
             color = random_color()
-        self.screen = screen
+        self.screen = window
         self.position = position
         self.r = r
         self.vx = vx
         self.vy = vy
         self.color = color
         self.live = 150
+        self.__gravity = gravity
 
     def draw(self):
         """
@@ -65,7 +120,7 @@ class Ball:
         :param times_moved: stands for visible velocity of the ball
         """
         for _ in range(times_moved):
-            self.vy -= gravity
+            self.vy -= self.__gravity
             if self.check_and_reflect(reflection_cut):
                 self.position[0] += self.vx / (1 - 1.1 * reflection_cut)
                 self.position[1] -= self.vy / (1 - 1.1 * reflection_cut)
@@ -106,15 +161,12 @@ class Ball:
         else:
             return False
 
-    def tick_and_kill(self):
+    def tick(self):
         """
         Makes the ball "older" and kills if too "old"
         """
-        global balls
         if self.live > 0:
             self.live -= 1
-        else:
-            balls.remove(self)
 
 
 class Gun:
@@ -123,7 +175,7 @@ class Gun:
     """
 
     def __init__(self):
-        self.screen = screen
+        self.screen = window
         self.power = 10
         self.is_active = False
         self.angle = 0
@@ -137,27 +189,20 @@ class Gun:
         """
         Fires with a ball
         """
-        global balls, bullet
-        bullet += 1
-        ball_vx, ball_vy = self.power * np.cos(self.angle) / FPS * 30, self.power * np.sin(self.angle) / FPS * 30
-        new_ball = Ball(list(self.position), ball_vx, ball_vy)
-        new_ball.r += 5
-        balls.append(new_ball)
         self.is_active = 0
-        self.power = 10
+        self.power = 20
 
     def targeting(self, position):
         """
         Sets gun's head according to mouse position
         :param position: mouse position
         """
-        if event:
-            if position[0] - self.position[0] != 0:
-                tg = -(position[1] - self.position[1]) / (position[0] - self.position[0])
-                if tg >= 0:
-                    self.angle = np.arctan(tg)
-                else:
-                    self.angle = np.pi + np.arctan(tg)
+        if position[0] - self.position[0] != 0:
+            tg = -(position[1] - self.position[1]) / (position[0] - self.position[0])
+            if tg >= 0:
+                self.angle = np.arctan(tg)
+            else:
+                self.angle = np.pi + np.arctan(tg)
         if self.is_active:
             self.color = RED
         else:
@@ -167,20 +212,20 @@ class Gun:
         pygame.draw.line(self.screen,
                          self.color,
                          self.position,
-                         (self.position[0] + np.cos(self.angle) * self.power,
-                          self.position[1] - np.sin(self.angle) * self.power),
-                         2)
+                         (self.position[0] + np.cos(self.angle) * (self.power / 2),
+                          self.position[1] - np.sin(self.angle) * (self.power / 2)),
+                         5)
 
     def power_up(self):
         if self.is_active:
-            if self.power < 100:
+            if self.power < 150:
                 self.power += 1
             self.color = RED
         else:
             self.color = GREY
 
 
-class Target:
+class Enemy:
     """
     Initializes a target, controls its parameters
     """
@@ -191,7 +236,7 @@ class Target:
         self.color = RED
         self.points = 0
         self.is_alive = True
-        self.screen = screen
+        self.screen = window
         self.velocity = [int(randint(-10, 10) / FPS * 30), int(randint(-10, 10) / FPS * 30)]
 
     def hit(self, points=1):
@@ -221,52 +266,27 @@ class Target:
         pygame.draw.circle(self.screen, self.color, self.position, self.r)
 
 
-pygame.init()
-screen = pygame.display.set_mode(SPACE)
-bullet = 0
-balls = []
-number_of_targets = 2
-targets = []
+FPS = 60
+
+RED = 0xFF0000
+BLUE = 0x0000FF
+YELLOW = 0xFFC91F
+GREEN = 0x00FF00
+MAGENTA = 0xFF03B8
+CYAN = 0x00FFCC
+BLACK = (0, 0, 0)
+WHITE = (250, 250, 250)
+GREY = 0x7D7D7D
+GAME_COLORS = [RED, BLUE, YELLOW, GREEN, MAGENTA, CYAN]
+
+WIDTH, HEIGHT = SPACE = 800, 600
+window = pygame.display.set_mode(SPACE)
+
 gravity = 1
-for _ in range(number_of_targets):
-    targets.append(Target())
+number_of_enemies = 2
 
-clock = pygame.time.Clock()
-gun = Gun()
-finished = False
+game = GameManager(window, number_of_enemies)
+game.mainloop()
 
-while not finished:
-    screen.fill(WHITE)
-    gun.draw()
-    for target in targets:
-        target.draw()
-    for ball in balls:
-        ball.draw()
-    pygame.display.update()
 
-    clock.tick(FPS)
-    for event in pygame.event.get():
-        if event.type == pygame.QUIT:
-            finished = True
-        elif event.type == pygame.MOUSEBUTTONDOWN:
-            gun.fire_start()  # deleted event here
-        elif event.type == pygame.MOUSEBUTTONUP:
-            gun.fire_end()
-        elif event.type == pygame.MOUSEMOTION:
-            gun.targeting(pygame.mouse.get_pos())
 
-    gun.power_up()
-    for ball in balls:
-        ball.move()
-        ball.tick_and_kill()
-    for target in targets:
-        for ball in balls:
-            if ball.hit_test(target) and target.is_alive:
-                target.is_alive = False
-                target.hit()
-                targets.remove(target)
-                targets.append(Target())
-                ball.live -= 150
-        target.move()
-
-pygame.quit()
