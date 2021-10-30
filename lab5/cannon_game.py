@@ -3,6 +3,13 @@ import numpy as np
 import pygame
 
 
+def random_color():
+    """
+    :return: random_color parameters
+    """
+    return randint(0, 254), randint(0, 254), randint(0, 254)
+
+
 class GameManager:
     """"""
     def __init__(self, screen, number_of_targets):
@@ -51,7 +58,6 @@ class GameManager:
                         target.hit()
                         self.targets.remove(target)
                         self.targets.append(Enemy())
-                        shot.live -= 100
                 target.move()
             self.screen.fill(WHITE)
             for target in self.targets:
@@ -66,107 +72,12 @@ class GameManager:
     def fire(self):
         self.bullet += 1
         shot_vx = self.gun.power * np.cos(self.gun.angle) / FPS * 20
-        shot_vy = self.gun.power * np.sin(self.gun.angle) / FPS * 20
-        new_shot = Shot(list(self.gun.position), shot_vx, shot_vy)
-        new_shot.r += 5
+        shot_vy = - self.gun.power * np.sin(self.gun.angle) / FPS * 20
+        if self.bullet % 5 == 0:
+            new_shot = Laser(list(self.gun.position), shot_vx, shot_vy)
+        else:
+            new_shot = Bomb(list(self.gun.position), shot_vx, shot_vy)
         self.shots.append(new_shot)
-
-
-def random_color():
-    """
-    :return: random_color parameters
-    """
-    return randint(0, 254), randint(0, 254), randint(0, 254)
-
-
-class Shot:
-    def __init__(self, position, vx, vy, color=None, r=15):
-        """
-        Initializes ball's initial parameters
-
-        :param position: ball's initial velocity
-        :param vx: ball's initial velocity (x axis)
-        :param vy: ball's initial velocity (y axis)
-        :param r: ball's radius
-        :param color: ball's color
-        """
-        if color is None:
-            color = random_color()
-        self.screen = window
-        self.position = position
-        self.r = r
-        self.vx = vx
-        self.vy = vy
-        self.color = color
-        self.live = 150
-        self.__gravity = gravity
-
-    def draw(self):
-        """
-        Draws the ball
-        """
-        pygame.draw.circle(
-            self.screen,
-            self.color,
-            self.position,
-            self.r
-        )
-
-    def move(self, reflection_cut=0.4, times_moved=1):
-        """
-        Moves the ball according to its velocity and position
-
-        :param reflection_cut: part of velocity value cut by single reflection
-        :param times_moved: stands for visible velocity of the ball
-        """
-        for _ in range(times_moved):
-            self.vy -= self.__gravity
-            if self.check_and_reflect(reflection_cut):
-                self.position[0] += self.vx / (1 - 1.1 * reflection_cut)
-                self.position[1] -= self.vy / (1 - 1.1 * reflection_cut)
-            else:
-                self.position[0] += self.vx
-                self.position[1] -= self.vy
-
-    def check_and_reflect(self, reflection_cut):
-        """
-        Checks if the ball touches the walls and reflect if needed
-
-        :param reflection_cut: part of velocity value cut by single reflection
-        :return: Whether touched any of the walls (bool)
-        """
-        touched_wall = self.position[0] <= (self.r + 1) or self.position[0] >= (SPACE[0] - self.r - 1)
-        touched_floor = self.position[1] <= (self.r + 1) or self.position[1] >= (SPACE[1] - self.r - 1)
-        if touched_wall or touched_floor:
-            if touched_wall:
-                self.vx = -(self.vx * (1 - reflection_cut))
-            if self.position[1] <= (self.r + 1) or self.position[1] >= (SPACE[1] - self.r - 1):
-                self.vy = -(self.vy * (1 - reflection_cut))
-            return True
-        else:
-            return False
-
-    def hit_test(self, obj):
-        """
-        The function checks whether the ball hits the aim or not
-
-        :param obj: object, for which the test takes place
-        :return: Whether has hit or not (bool)
-        """
-        # Pifagor theorem
-        hit = (self.position[0] - obj.position[0]) ** 2 + \
-              (self.position[1] - obj.position[1]) ** 2 <= (self.r + obj.r) ** 2
-        if hit:
-            return True
-        else:
-            return False
-
-    def tick(self):
-        """
-        Makes the ball "older" and kills if too "old"
-        """
-        if self.live > 0:
-            self.live -= 1
 
 
 class Gun:
@@ -180,7 +91,7 @@ class Gun:
         self.is_active = False
         self.angle = 0
         self.color = GREY
-        self.position = (WIDTH / 2, HEIGHT * 0.9)
+        self.position = (WIDTH / 2, HEIGHT * 0.95)
 
     def fire_start(self):
         self.is_active = True
@@ -223,6 +134,131 @@ class Gun:
             self.color = RED
         else:
             self.color = GREY
+
+
+class Shot:
+    def __init__(self, position, vx, vy, live, color=None, r=20):
+        """
+        Initializes ball's initial parameters
+
+        :param position: ball's initial velocity
+        :param vx: ball's initial velocity (x axis)
+        :param vy: ball's initial velocity (y axis)
+        :param r: ball's radius
+        :param color: ball's color
+        """
+        if color is None:
+            color = random_color()
+        self.screen = window
+        self.position = position
+        self.r = r
+        self.vx = vx
+        self.vy = vy
+        self.live = live
+        self.color = color
+        self.gravity = gravity
+
+    def check_and_reflect(self, reflection_cut):
+        """
+        Checks if the ball touches the walls and reflect if needed
+
+        :param reflection_cut: part of velocity value cut by single reflection
+        :return: Whether touched any of the walls (bool)
+        """
+        touched_wall = self.position[0] <= (self.r + 1) or self.position[0] >= (SPACE[0] - self.r - 1)
+        touched_floor = self.position[1] <= (self.r + 1) or self.position[1] >= (SPACE[1] - self.r - 1)
+        if touched_wall or touched_floor:
+            if touched_wall:
+                self.vx = -(self.vx * (1 - reflection_cut))
+            if self.position[1] <= (self.r + 1) or self.position[1] >= (SPACE[1] - self.r - 1):
+                self.vy = -(self.vy * (1 - reflection_cut))
+            return True
+        else:
+            return False
+
+    def hit_test(self, obj):
+        """
+        The function checks whether the ball hits the aim or not
+
+        :param obj: object, for which the test takes place
+        :return: Whether has hit or not (bool)
+        """
+        # Pifagor theorem
+        hit = (self.position[0] - obj.position[0]) ** 2 + \
+              (self.position[1] - obj.position[1]) ** 2 <= (self.r + obj.r) ** 2
+        if hit:
+            self.live = 5
+            return True
+        else:
+            return False
+
+    def tick(self):
+        """
+        Makes the shot "older"
+        """
+        if self.live > 0:
+            self.live -= 1
+
+
+class Laser(Shot):
+    def __init__(self, position, vx, vy):
+        super().__init__(position, vx, vy, 20)
+        self.vx = 15 * vx
+        self.vy = 15 * vy
+
+    def draw(self):
+        pygame.draw.line(self.screen,
+                         self.color,
+                         self.position,
+                         (self.position[0] + self.vx, self.position[1] + self.vy),
+                         5)
+
+    def move(self):
+        pass
+
+
+class Bomb(Shot):
+    def __init__(self, position, vx, vy):
+        super().__init__(position, vx, vy, 100)
+        self.live = 50
+        self.vx = vx * 0.8
+        self.vy = vy * 0.8
+
+    def move(self, reflection_cut=0, times_moved=1):
+        """
+        Moves the ball according to its velocity and position
+
+        :param reflection_cut: part of velocity value cut by single reflection
+        :param times_moved: stands for visible velocity of the ball
+        """
+        if self.live > 5:
+            for _ in range(times_moved):
+                self.vy -= self.gravity
+                if self.check_and_reflect(reflection_cut):
+                    self.position[0] += self.vx / (1 - 1.1 * reflection_cut)
+                    self.position[1] -= self.vy / (1 - 1.1 * reflection_cut)
+                else:
+                    self.position[0] += self.vx
+                    self.position[1] -= self.vy
+
+    def draw(self):
+        if self.live <= 10:
+            self.r += 2 * (10 - self.live)
+            pygame.draw.circle(self.screen, ORANGE, self.position, self.r)
+        else:
+            pygame.draw.line(self.screen, self.color,
+                             (self.position[0] - self.r * np.sqrt(0.5), self.position[1] + self.r * np.sqrt(0.5)),
+                             (self.position[0] + self.r * np.sqrt(0.5), self.position[1] - self.r * np.sqrt(0.5)), 3)
+            pygame.draw.line(self.screen, self.color,
+                             (self.position[0] + self.r * np.sqrt(0.5), self.position[1] + self.r * np.sqrt(0.5)),
+                             (self.position[0] - self.r * np.sqrt(0.5), self.position[1] - self.r * np.sqrt(0.5)), 3)
+            pygame.draw.line(self.screen, self.color,
+                             (self.position[0] - self.r, self.position[1]),
+                             (self.position[0] + self.r, self.position[1]), 3)
+            pygame.draw.line(self.screen, self.color,
+                             (self.position[0], self.position[1] + self.r),
+                             (self.position[0], self.position[1] - self.r), 3)
+            pygame.draw.circle(self.screen, BLACK, self.position, self.r - 6)
 
 
 class Enemy:
@@ -268,6 +304,7 @@ class Enemy:
 
 FPS = 60
 
+ORANGE = (255, 165, 0)
 RED = 0xFF0000
 BLUE = 0x0000FF
 YELLOW = 0xFFC91F
@@ -287,6 +324,3 @@ number_of_enemies = 2
 
 game = GameManager(window, number_of_enemies)
 game.mainloop()
-
-
-
