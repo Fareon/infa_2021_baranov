@@ -53,7 +53,7 @@ class GameManager:
                     self.shots.remove(shot)
             for target in self.targets:
                 for shot in self.shots:
-                    if shot.hit_test(target) and target.is_alive:
+                    if shot.hit_test(target, self.gun) and target.is_alive:
                         target.is_alive = False
                         target.hit()
                         self.targets.remove(target)
@@ -176,22 +176,6 @@ class Shot:
         else:
             return False
 
-    def hit_test(self, obj):
-        """
-        The function checks whether the ball hits the aim or not
-
-        :param obj: object, for which the test takes place
-        :return: Whether has hit or not (bool)
-        """
-        # Pifagor theorem
-        hit = (self.position[0] - obj.position[0]) ** 2 + \
-              (self.position[1] - obj.position[1]) ** 2 <= (self.r + obj.r) ** 2
-        if hit:
-            self.live = 5
-            return True
-        else:
-            return False
-
     def tick(self):
         """
         Makes the shot "older"
@@ -203,18 +187,35 @@ class Shot:
 class Laser(Shot):
     def __init__(self, position, vx, vy):
         super().__init__(position, vx, vy, 20)
-        self.vx = 15 * vx
-        self.vy = 15 * vy
+        self.vx = 1000 * vx
+        self.vy = 1000 * vy
+        self.width = int(np.sqrt(vy ** 2 + vx ** 2) / 15) + 5
 
     def draw(self):
         pygame.draw.line(self.screen,
                          self.color,
                          self.position,
                          (self.position[0] + self.vx, self.position[1] + self.vy),
-                         5)
+                         int(self.width / 20 * self.live))
 
     def move(self):
         pass
+
+    def hit_test(self, obj, gun):
+        """
+        The function checks whether the ball hits the aim or not
+        :param gun: object, which emits laser
+        :param obj: object, for which the test takes place
+        :return: Whether has hit or not (bool)
+        """
+        velocity_abs = np.sqrt(self.vx ** 2 + self.vy ** 2)
+        c = -(self.vy * gun.position[0] - self.vx * gun.position[1])
+        true_width = self.width / 20 * self.live
+        hit = np.abs(obj.position[0] * self.vy + (-self.vx) * obj.position[1] + c) / velocity_abs <= obj.r + true_width
+        if hit:
+            return True
+        else:
+            return False
 
 
 class Bomb(Shot):
@@ -240,6 +241,23 @@ class Bomb(Shot):
                 else:
                     self.position[0] += self.vx
                     self.position[1] -= self.vy
+
+    def hit_test(self, obj, gun=None):
+        """
+        The function checks whether the ball hits the aim or not
+        :param gun: object, so that everything works  # костыль, пока что не знаю, как без него обойтись
+                                                      # потом я превращу это в преимущество, сейчас костыль
+        :param obj: object, for which the test takes place
+        :return: Whether has hit or not (bool)
+        """
+        # Pifagor theorem
+        hit = (self.position[0] - obj.position[0]) ** 2 + \
+              (self.position[1] - obj.position[1]) ** 2 <= (self.r + obj.r) ** 2
+        if hit:
+            self.live = 5
+            return True
+        else:
+            return False
 
     def draw(self):
         if self.live <= 10:
