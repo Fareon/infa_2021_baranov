@@ -12,6 +12,7 @@ def random_color():
 
 class GameManager:
     """"""
+
     def __init__(self, screen, number_of_targets):
         """
         Initialises the cannon game
@@ -26,6 +27,7 @@ class GameManager:
         self.finished = False
         for _ in range(number_of_targets):
             self.create_enemy()
+        self.next_shot = choice(['Laser', 'Bomb'])
 
     def mainloop(self):
         """
@@ -42,6 +44,7 @@ class GameManager:
                 elif event.type == pygame.MOUSEBUTTONUP:
                     self.fire()
                     self.gun.fire_end()
+                    self.next_shot = choice(['Laser', 'Bomb'])
                 elif event.type == pygame.MOUSEMOTION:
                     self.gun.targeting(pygame.mouse.get_pos())
             self.gun.power_up()
@@ -64,7 +67,7 @@ class GameManager:
                 target.draw()
             for shot in self.shots:
                 shot.draw()
-            self.gun.draw()
+            self.gun.draw(next_shot=self.next_shot)
             pygame.display.update()
 
         pygame.quit()
@@ -73,9 +76,9 @@ class GameManager:
         self.bullet += 1
         shot_vx = self.gun.power * np.cos(self.gun.angle) / FPS * 20
         shot_vy = - self.gun.power * np.sin(self.gun.angle) / FPS * 20
-        if self.bullet % 5 == 0:
+        if self.next_shot == 'Laser':
             new_shot = Laser(list(self.gun.position), shot_vx, shot_vy)
-        else:
+        elif self.next_shot == 'Bomb':
             new_shot = Bomb(list(self.gun.position), shot_vx, shot_vy)
         self.shots.append(new_shot)
 
@@ -125,13 +128,25 @@ class Gun:
         else:
             self.color = GREY
 
-    def draw(self):
-        pygame.draw.line(self.screen,
-                         self.color,
-                         self.position,
-                         (self.position[0] + np.cos(self.angle) * (self.power / 2),
-                          self.position[1] - np.sin(self.angle) * (self.power / 2)),
-                         5)
+    def draw(self, next_shot):
+        if next_shot == 'Bomb':
+            pygame.draw.line(self.screen,
+                             self.color,
+                             self.position,
+                             (self.position[0] + np.cos(self.angle) * (self.power / 2 + 5),
+                              self.position[1] - np.sin(self.angle) * (self.power / 2 + 5)),
+                             5)
+            pygame.draw.circle(self.screen, BLACK, self.position, 7)
+        elif next_shot == 'Laser':
+            pygame.draw.line(self.screen,
+                             self.color,
+                             self.position,
+                             (self.position[0] + np.cos(self.angle) * (self.power / 2 + 5),
+                              self.position[1] - np.sin(self.angle) * (self.power / 2 + 5)),
+                             5)
+            pygame.draw.circle(self.screen, BLUE, (self.position[0] + np.cos(self.angle) * (self.power / 2 + 5),
+                                                   self.position[1] - np.sin(self.angle) * (self.power / 2 + 5)),
+                               int(self.power / 10))
 
     def power_up(self):
         if self.is_active:
