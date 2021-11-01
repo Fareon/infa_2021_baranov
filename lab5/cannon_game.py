@@ -1,4 +1,4 @@
-from random import randint, choice
+from random import randint, choice, random
 import numpy as np
 import pygame
 
@@ -28,6 +28,7 @@ class GameManager:
         for _ in range(number_of_targets):
             self.create_enemy()
         self.next_shot = choice(['Laser', 'Bomb'])
+        self.enemy_shots = []
 
     def mainloop(self):
         """
@@ -40,7 +41,7 @@ class GameManager:
                 if event.type == pygame.QUIT:
                     self.finished = True
                 elif event.type == pygame.MOUSEBUTTONDOWN:
-                    self.gun.fire_start()  # deleted event here
+                    self.gun.fire_start()
                 elif event.type == pygame.MOUSEBUTTONUP:
                     self.fire()
                     self.gun.fire_end()
@@ -54,17 +55,28 @@ class GameManager:
                 shot.tick()
                 if shot.live <= 0:
                     self.shots.remove(shot)
+            for enemy_shot in self.enemy_shots:
+                enemy_shot.move()
+                if enemy_shot.hit_test(self.gun):
+                    self.finished = True
+                if enemy_shot.out_of_sight():
+                    self.enemy_shots.remove(enemy_shot)
             for target in self.targets:
                 for shot in self.shots:
                     if shot.hit_test(target, self.gun) == 'the end':
                         self.finished = True
+                        print('Oops! You have just terminated yourself!')
                     elif shot.hit_test(target, self.gun) and target.is_alive:
                         target.is_alive = False
                         target.hit()
                         self.targets.remove(target)
                         self.create_enemy()
+                        if kill_or_still():
+                            self.enemy_shots.append(Drop(target))
                 target.move(times_moved=FPS // 2)
             self.screen.fill(WHITE)
+            for enemy_shot in self.enemy_shots:
+                enemy_shot.draw()
             for target in self.targets:
                 target.draw()
             for shot in self.shots:
@@ -80,9 +92,10 @@ class GameManager:
         shot_vy = - self.gun.power * np.sin(self.gun.angle) / FPS * 20
         if self.next_shot == 'Laser':
             new_shot = Laser(list(self.gun.position), shot_vx, shot_vy)
+            self.shots.append(new_shot)
         elif self.next_shot == 'Bomb':
             new_shot = Bomb(list(self.gun.position), shot_vx, -shot_vy)
-        self.shots.append(new_shot)
+            self.shots.append(new_shot)
 
     def create_enemy(self):
         if choice(['Ball', 'Cube']) == 'Ball':
@@ -285,7 +298,7 @@ class Bomb(Shot):
         if hit_gun and self.live < 10:
             return 'the end'
         if hit_enemy:
-            if self. live > 10:
+            if self.live > 10:
                 self.live = 10
             return True
         else:
@@ -312,13 +325,17 @@ class Bomb(Shot):
             pygame.draw.circle(self.screen, BLACK, self.position, self.r - 6)
 
 
+def kill_or_still(probability=0.2):
+    return random() <= probability
+
+
 class Enemy:
     """
     Initializes a target, controls its parameters
     """
 
     def __init__(self):
-        self.r = randint(5, 40)
+        self.r = randint(10, 40)
         self.position = [randint(self.r, WIDTH - self.r), randint(self.r, HEIGHT * 0.75 - self.r)]
         self.color = RED
         self.points = 0
@@ -374,7 +391,7 @@ class Cube(Enemy):
 class Ball(Enemy):
     def __init__(self):
         super().__init__()
-        pass
+        self.gravity = gravity
 
     def draw(self):
         pygame.draw.circle(self.screen, self.color, self.position, self.r)
@@ -394,13 +411,52 @@ class Ball(Enemy):
         :param times_moved: stands for visible velocity of the ball
         """
         for _ in range(times_moved):
-            self.velocity[1] -= (gravity / times_moved / FPS)
+            self.velocity[1] -= (self.gravity / times_moved / FPS)
             if self.check_and_reflect():
                 self.position[0] += self.velocity[0] / (1 - reflection_cut)
                 self.position[1] -= self.velocity[1] / (1 - reflection_cut)
             else:
                 self.position[0] += self.velocity[0]
                 self.position[1] -= self.velocity[1]
+
+
+class Drop:
+    def __init__(self, parent):
+        self.gravity = gravity
+        self.position = parent.position
+        self.r = parent.r * 2
+        self.color = BLACK
+        self.velocity = 0
+        self.screen = window
+
+    def draw(self):
+        pygame.draw.circle(self.screen, self.color, self.position, self.r)
+
+    def move(self, times_moved=30):
+        """
+        Moves the drop according to its velocity and position
+
+        :param times_moved: stands for visible velocity of the ball
+        """
+        for _ in range(times_moved):
+            self.velocity += (self.gravity / times_moved / FPS)
+            self.position[1] += self.velocity
+
+    def hit_test(self, obj):
+        """
+        The function checks whether the ball hits the aim or not
+        :param obj: object, for which the test takes place
+        :return: Whether has hit or not (bool)
+        """
+        # Pifagor theorem
+        hit = (self.position[0] - obj.position[0]) ** 2 + (self.position[1] - obj.position[1]) ** 2 <= self.r ** 2
+        if hit:
+            return True
+        else:
+            return False
+
+    def out_of_sight(self):
+        return self.position[1] > HEIGHT + self.r
 
 
 FPS = 60
