@@ -1,4 +1,4 @@
-from random import randint
+from random import randint, choice
 import numpy as np
 import pygame
 
@@ -25,7 +25,7 @@ class GameManager:
         self.gun = Gun()
         self.finished = False
         for _ in range(number_of_targets):
-            self.targets.append(Cube())
+            self.create_enemy()
 
     def mainloop(self):
         """
@@ -57,7 +57,7 @@ class GameManager:
                         target.is_alive = False
                         target.hit()
                         self.targets.remove(target)
-                        self.targets.append(Cube())
+                        self.create_enemy()
                 target.move(times_moved=FPS // 2)
             self.screen.fill(WHITE)
             for target in self.targets:
@@ -78,6 +78,12 @@ class GameManager:
         else:
             new_shot = Bomb(list(self.gun.position), shot_vx, shot_vy)
         self.shots.append(new_shot)
+
+    def create_enemy(self):
+        if choice(['Ball', 'Cube']) == 'Ball':
+            self.targets.append(Ball())
+        else:
+            self.targets.append(Cube())
 
 
 class Gun:
