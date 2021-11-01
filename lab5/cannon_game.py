@@ -25,7 +25,7 @@ class GameManager:
         self.gun = Gun()
         self.finished = False
         for _ in range(number_of_targets):
-            self.targets.append(Ball())
+            self.targets.append(Cube())
 
     def mainloop(self):
         """
@@ -57,8 +57,8 @@ class GameManager:
                         target.is_alive = False
                         target.hit()
                         self.targets.remove(target)
-                        self.targets.append(Ball())
-                target.move()
+                        self.targets.append(Cube())
+                target.move(times_moved=FPS // 2)
             self.screen.fill(WHITE)
             for target in self.targets:
                 target.draw()
@@ -254,7 +254,7 @@ class Bomb(Shot):
         hit = (self.position[0] - obj.position[0]) ** 2 + \
               (self.position[1] - obj.position[1]) ** 2 <= (self.r + obj.r) ** 2
         if hit:
-            self.live = 5
+            self.live = 10
             return True
         else:
             return False
@@ -291,7 +291,7 @@ class Enemy:
         self.points = 0
         self.is_alive = True
         self.screen = window
-        self.velocity = [int(randint(-10, 10) / FPS * 30), int(randint(-10, 10) / FPS * 30)]
+        self.velocity = [randint(-20, 20) / FPS, randint(-10, 10) / FPS]
 
     def hit(self, points=1):
         """
@@ -300,11 +300,6 @@ class Enemy:
         """
         self.points += points
 
-    def move(self):
-        self.check_and_reflect()
-        for _ in range(2):
-            self.position[_] -= self.velocity[_]
-
     def check_and_reflect(self):
         """
         Checks if the target touches the walls and reflect if needed
@@ -312,9 +307,9 @@ class Enemy:
         touched_wall = self.position[0] <= (self.r + 1) or self.position[0] >= (SPACE[0] - self.r - 1)
         touched_floor = self.position[1] <= (self.r + 1) or self.position[1] >= (SPACE[1] * 0.75)
         if touched_wall:
-            self.velocity[0] = np.sign(self.velocity[0]) * randint(-10, - np.abs(self.velocity[0]))
+            self.velocity[0] = - self.velocity[0]
         if touched_floor:
-            self.velocity[1] = np.sign(self.velocity[1]) * randint(-10, - np.abs(self.velocity[1]))
+            self.velocity[1] = - self.velocity[1]
 
     def draw(self):
         pygame.draw.circle(self.screen, self.color, self.position, self.r)
@@ -336,6 +331,12 @@ class Cube(Enemy):
                          (self.position[0] - int(self.r / 2), self.position[1] + int(self.r / 5),
                           self.r, int(self.r / 5)))
 
+    def move(self, times_moved=30):
+        for __ in range(times_moved):
+            self.check_and_reflect()
+            for _ in range(2):
+                self.position[_] -= self.velocity[_]
+
 
 class Ball(Enemy):
     def __init__(self):
@@ -351,6 +352,23 @@ class Ball(Enemy):
         pygame.draw.rect(self.screen, WHITE,
                          (self.position[0] - int(self.r / 2), self.position[1] + int(self.r / 5),
                           self.r, int(self.r / 5)))
+
+    def move(self, reflection_cut=0, times_moved=30):
+        """
+        Moves the ball according to its velocity and position
+
+        :param reflection_cut: part of velocity value cut by single reflection
+        :param times_moved: stands for visible velocity of the ball
+        """
+        for _ in range(times_moved):
+            self.velocity[1] -= (gravity / times_moved / FPS)
+            if self.check_and_reflect():
+                self.position[0] += self.velocity[0] / (1 - reflection_cut)
+                self.position[1] -= self.velocity[1] / (1 - reflection_cut)
+            else:
+                self.position[0] += self.velocity[0]
+                self.position[1] -= self.velocity[1]
+
 
 FPS = 60
 
