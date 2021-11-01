@@ -81,7 +81,7 @@ class GameManager:
         if self.next_shot == 'Laser':
             new_shot = Laser(list(self.gun.position), shot_vx, shot_vy)
         elif self.next_shot == 'Bomb':
-            new_shot = Bomb(list(self.gun.position), shot_vx, shot_vy)
+            new_shot = Bomb(list(self.gun.position), shot_vx, -shot_vy)
         self.shots.append(new_shot)
 
     def create_enemy(self):
@@ -102,7 +102,7 @@ class Gun:
         self.is_active = False
         self.angle = 0
         self.color = GREY
-        self.position = (WIDTH / 2, HEIGHT * 0.95)
+        self.position = [WIDTH / 2, HEIGHT * 0.9]
 
     def fire_start(self):
         self.is_active = True
@@ -119,12 +119,16 @@ class Gun:
         Sets gun's head according to mouse position
         :param position: mouse position
         """
-        if position[0] - self.position[0] != 0:
-            tg = -(position[1] - self.position[1]) / (position[0] - self.position[0])
-            if tg >= 0:
-                self.angle = np.arctan(tg)
-            else:
-                self.angle = np.pi + np.arctan(tg)
+        if position[1] <= self.position[1]:
+            if position[0] - self.position[0] != 0:
+                tg = -(position[1] - self.position[1]) / (position[0] - self.position[0])
+                if tg >= 0:
+                    self.angle = np.arctan(tg)
+                else:
+                    self.angle = np.pi + np.arctan(tg)
+        elif 30 < position[0] < WIDTH - 30:
+            self.angle = np.pi / 2
+            self.position[0] = position[0]
         if self.is_active:
             self.color = RED
         else:
