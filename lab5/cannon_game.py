@@ -56,7 +56,9 @@ class GameManager:
                     self.shots.remove(shot)
             for target in self.targets:
                 for shot in self.shots:
-                    if shot.hit_test(target, self.gun) and target.is_alive:
+                    if shot.hit_test(target, self.gun) == 'the end':
+                        self.finished = True
+                    elif shot.hit_test(target, self.gun) and target.is_alive:
                         target.is_alive = False
                         target.hit()
                         self.targets.remove(target)
@@ -263,7 +265,7 @@ class Bomb(Shot):
                     self.position[0] += self.vx
                     self.position[1] -= self.vy
 
-    def hit_test(self, obj, gun=None):
+    def hit_test(self, obj, gun):
         """
         The function checks whether the ball hits the aim or not
         :param gun: object, so that everything works  # костыль, пока что не знаю, как без него обойтись
@@ -271,18 +273,24 @@ class Bomb(Shot):
         :param obj: object, for which the test takes place
         :return: Whether has hit or not (bool)
         """
+        hit_gun = (self.position[0] - gun.position[0]) ** 2 + \
+                  (self.position[1] - gun.position[1]) ** 2 <= self.r ** 2
         # Pifagor theorem
-        hit = (self.position[0] - obj.position[0]) ** 2 + \
-              (self.position[1] - obj.position[1]) ** 2 <= (self.r + obj.r) ** 2
-        if hit:
-            self.live = 10
+        hit_enemy = (self.position[0] - obj.position[0]) ** 2 + \
+                    (self.position[1] - obj.position[1]) ** 2 <= (self.r + obj.r) ** 2
+        if hit_gun and self.live < 10:
+            return 'the end'
+        if hit_enemy:
+            if self. live > 10:
+                self.live = 10
             return True
         else:
             return False
 
     def draw(self):
+        r = self.r
         if self.live <= 10:
-            self.r += 2 * (10 - self.live)
+            self.r = r + 2 * (10 - self.live)
             pygame.draw.circle(self.screen, ORANGE, self.position, self.r)
         else:
             pygame.draw.line(self.screen, self.color,
