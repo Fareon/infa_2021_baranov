@@ -25,7 +25,7 @@ class GameManager:
         self.gun = Gun()
         self.finished = False
         for _ in range(number_of_targets):
-            self.targets.append(Enemy())
+            self.targets.append(Ball())
 
     def mainloop(self):
         """
@@ -57,7 +57,7 @@ class GameManager:
                         target.is_alive = False
                         target.hit()
                         self.targets.remove(target)
-                        self.targets.append(Enemy())
+                        self.targets.append(Ball())
                 target.move()
             self.screen.fill(WHITE)
             for target in self.targets:
@@ -319,6 +319,38 @@ class Enemy:
     def draw(self):
         pygame.draw.circle(self.screen, self.color, self.position, self.r)
 
+
+class Cube(Enemy):
+    def __init__(self):
+        super().__init__()
+        pass
+
+    def draw(self):
+        pygame.draw.rect(self.screen, self.color,
+                         (self.position[0] - self.r, self.position[1] - self.r, self.r * 2, self.r * 2))
+        pygame.draw.circle(self.screen, WHITE,
+                           (self.position[0] - int(self.r / 2), self.position[1] - int(self.r / 2)), int(self.r / 7))
+        pygame.draw.circle(self.screen, WHITE,
+                           (self.position[0] + int(self.r / 2), self.position[1] - int(self.r / 2)), int(self.r / 5))
+        pygame.draw.rect(self.screen, WHITE,
+                         (self.position[0] - int(self.r / 2), self.position[1] + int(self.r / 5),
+                          self.r, int(self.r / 5)))
+
+
+class Ball(Enemy):
+    def __init__(self):
+        super().__init__()
+        pass
+
+    def draw(self):
+        pygame.draw.circle(self.screen, self.color, self.position, self.r)
+        pygame.draw.circle(self.screen, WHITE,
+                           (self.position[0] - int(self.r / 2), self.position[1] - int(self.r / 2)), int(self.r / 7))
+        pygame.draw.circle(self.screen, WHITE,
+                           (self.position[0] + int(self.r / 2), self.position[1] - int(self.r / 2)), int(self.r / 5))
+        pygame.draw.rect(self.screen, WHITE,
+                         (self.position[0] - int(self.r / 2), self.position[1] + int(self.r / 5),
+                          self.r, int(self.r / 5)))
 
 FPS = 60
 
