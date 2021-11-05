@@ -5,17 +5,21 @@ import pygame
 
 def random_color():
     """
-    :return: random_color parameters
+    :return: random color parameters
     """
     return randint(0, 254), randint(0, 254), randint(0, 254)
 
 
 class GameManager:
-    """"""
+    """
+    Initializes the cannon_game and controls it's continuation
+    """
 
     def __init__(self, screen, number_of_targets):
         """
         Initialises the cannon game
+        :param screen: place for displaying the game
+        :param number_of_targets: number of enemies in the game (int)
         """
         self.screen = screen
         self.bullet = 0
@@ -32,7 +36,7 @@ class GameManager:
 
     def mainloop(self):
         """
-
+        Starts mainloop, which processes events
         """
         pygame.init()
         while not self.finished:
